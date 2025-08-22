@@ -1,0 +1,36 @@
+# --- Build directories ---
+build*/
+build_ok*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# --- Compiled binaries ---
+*.exe
+*.dll
+*.o
+*.obj
+*.so
+*.a
+*.lib
+*.pdb
+
+# --- Logs and temporary files ---
+*.log
+*.cmdlog
+*.tmp
+
+# --- IDE / editor specific ---
+.vscode/
+.idea/
+*.swp
+*.swo
+*.user
+*.VC.db
+*.VC.opendb
+
+# --- OS generated files ---
+.DS_Store
+Thumbs.db
+desktop.ini
