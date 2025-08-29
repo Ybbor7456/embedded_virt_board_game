@@ -11,16 +11,14 @@
 #include <vector>
 #include <unordered_map> // associative container (key→value) for animations by id
 
-// -----------------------------------------------------------------------------
-// Global asset caches (images/animations)
-// -----------------------------------------------------------------------------
+
 struct AnimSheet {
     Texture2D tex{};         // loaded spritesheet texture
     int cols = 1, rows = 1;  // grid layout
     int frameW = 0, frameH = 0;
     int total  = 1;          // cols*rows
 
-    // playback state (advanced each frame)
+    // playback state 
     float fps   = 12.0f;     // frames per second
     float accum = 0.0f;      // time accumulator
     int frameIndex = 0;      // current frame
@@ -30,9 +28,7 @@ struct AnimSheet {
 
 static std::unordered_map<int, AnimSheet> g_anims; // id → animation
 
-// -----------------------------------------------------------------------------
-// Command types (protocol V1 text mode)
-// -----------------------------------------------------------------------------
+
 struct CmdCls        {};
 struct CmdFlip       { unsigned frame = 0; };
 struct CmdText       { int x = 0, y = 0; std::string s; };
@@ -42,17 +38,17 @@ struct CmdImgLoadSheet { int id; std::string path; int cols; int rows; };
 struct CmdAnimSetFps   { int id; float fps; };
 struct CmdAnimDraw     { int id; int x; int y; float scale; };
 
-// Frame-scoped scene (what to draw between CLS..FLIP)
+
 struct DrawAnim { int id; int x; int y; float scale; };
 struct Scene {
-    std::vector<CmdText>  texts;  // TEXT commands collected for this frame
-    std::vector<DrawAnim> anims;  // ANIM_DRAW collected for this frame
+    std::vector<CmdText>  texts;  
+    std::vector<DrawAnim> anims;  
     void clear() { texts.clear(); anims.clear(); }
 };
-struct CmdAnimSetTotal { int id; int total; }; // to elimiante whitesapces in spritesheet
+struct CmdAnimSetTotal { int id; int total; }; // to elimiante 
 
 struct CmdBg { int r=0, g=0, b=0, a=255; };
-// Variant that can hold any command we support
+// Variant that can hold any command 
 using Command = std::variant<
     CmdCls, CmdFlip, CmdText,
     CmdImgLoadSheet, CmdAnimSetFps, CmdAnimDraw,
@@ -61,9 +57,7 @@ using Command = std::variant<
 
 
 
-// -----------------------------------------------------------------------------
-// Utilities
-// -----------------------------------------------------------------------------
+
 // removes leading/trailing whitespace, e.g. "    yo   " → "yo"
 static inline std::string trim(const std::string& s) {
     size_t a = s.find_first_not_of(" \t\r\n");
@@ -72,7 +66,7 @@ static inline std::string trim(const std::string& s) {
     return s.substr(a, b - a + 1);
 }
 
-// Extract the directory portion of a path (very simple, Windows-friendly).
+// xtract the directory portion of a path
 static std::string dirname_of(const std::string& path) {
     size_t p = path.find_last_of("/\\");
     if (p == std::string::npos) return ".";  // current dir
@@ -88,20 +82,17 @@ static std::string join_path(const std::string& a, const std::string& b) {
     return a + "/" + b;
 }
 
-// -----------------------------------------------------------------------------
-// Parsers (turn one line of text into a specific command)
-// -----------------------------------------------------------------------------
-// parses one TEXT line to CmdText (supports \" and \\ within the quoted string)
+
 static std::optional<CmdText> parseText(const std::string& line) {
     std::istringstream iss(line);
     std::string op; int x, y;
     if (!(iss >> op >> x >> y)) return std::nullopt;
 
-    // Find the opening quote in the original line
+ 
     size_t q1 = line.find('"');
     if (q1 == std::string::npos) return std::nullopt;
 
-    // Parse until an *unescaped* closing quote
+    
     std::string out; out.reserve(64);
     bool closed = false;
     for (size_t i = q1 + 1; i < line.size(); ++i) {
@@ -119,7 +110,7 @@ static std::optional<CmdText> parseText(const std::string& line) {
     return CmdText{ x, y, out };
 }
 
-// IMAGE_LOAD_SHEET <id> "path" <cols> <rows>
+
 static std::optional<CmdImgLoadSheet> parseImgLoadSheet(const std::string& line) {
     std::istringstream ss(line);
     std::string op; int id, cols, rows;
@@ -138,7 +129,7 @@ static std::optional<CmdImgLoadSheet> parseImgLoadSheet(const std::string& line)
     return CmdImgLoadSheet{ id, path, cols, rows };
 }
 
-// ANIM_SET_FPS <id> <fps>
+//  <id> <fps>
 static std::optional<CmdAnimSetFps> parseAnimSetFps(const std::string& line) {
     std::istringstream ss(line);
     std::string op; int id; float fps;
@@ -146,7 +137,7 @@ static std::optional<CmdAnimSetFps> parseAnimSetFps(const std::string& line) {
     return std::nullopt;
 }
 
-// ANIM_DRAW <id> <x> <y> <scale>
+//<id> <x> <y> <scale>
 static std::optional<CmdAnimDraw> parseAnimDraw(const std::string& line) {
     std::istringstream ss(line);
     std::string op; int id, x, y; float scale;
@@ -154,13 +145,13 @@ static std::optional<CmdAnimDraw> parseAnimDraw(const std::string& line) {
     return std::nullopt;
 }
 
-// Forward declarations so parseLine can see them
+
 static std::optional<CmdAnimSetTotal> parseAnimSetTotal(const std::string& line);
 static void doAnimSetTotal(const CmdAnimSetTotal& c);
 
 static std::optional<CmdBg> parseBg(const std::string& line);
 
-// Generic line → Command
+
 static std::optional<Command> parseLine(const std::string& raw) {
     std::string line = trim(raw);
     if (line.empty()) return std::nullopt;
@@ -197,7 +188,7 @@ static std::optional<Command> parseLine(const std::string& raw) {
         if (auto c = parseBg(line)) return Command{ *c };
 }
 
-    // Minimal viewer: ignore unknown lines (HELLO/VIEW/etc)
+    
     return std::nullopt;
 }
 
@@ -232,20 +223,17 @@ static std::optional<CmdBg> parseBg(const std::string& line) {
 
 
 
-// -----------------------------------------------------------------------------
-// Command executors / runtime helpers
-// -----------------------------------------------------------------------------
+
 static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir) {
     // Resolve path relative to the .cmdlog directory
     std::string full = c.path;
     bool absolute = (full.size() > 1 && (full[1] == ':' || full[0] == '/' || full[0] == '\\'));
     if (!absolute) full = join_path(baseDir, c.path);
 
-    // If already loaded, don't reset frame/accum every frame.
+    // If already loaded, don't reset frame
     auto it = g_anims.find(c.id);
     if (it != g_anims.end() && it->second.valid()) {
-        // Optional: if you want to allow swapping sheets when the path changes,
-        // you could track and compare the path here. For now, just keep it.
+       
         return;
     }
 
@@ -273,7 +261,7 @@ static void doAnimSetFps(const CmdAnimSetFps& c) {
     if (it != g_anims.end() && c.fps > 0.0f) it->second.fps = c.fps;
 }
 
-// Advance all animations by dt seconds
+// Advance all animations
 static void advanceAllAnims(float dt) {
     for (auto& kv : g_anims) {
         AnimSheet& a = kv.second;
@@ -343,7 +331,7 @@ int main(int argc, char** argv) {
         TraceLog(LOG_WARNING, "Could not open %s. Ensure you run: ./cmdviewer ../logs/sample.cmdlog or other name", filePath);
     }
 
-    // Parse all commands up-front (simple player)
+    // Parse all command
     std::vector<Command> cmds;
     if (fin) {
         std::string line;
@@ -355,18 +343,17 @@ int main(int argc, char** argv) {
     const std::string baseDir = dirname_of(filePath); // for resolving relative asset paths
 
     Scene scene;
-    size_t idx = 0;                  // index into cmds (playback cursor)
-    unsigned lastFrame = 0;          // last FLIP frame number
+    size_t idx = 0;                  // index into cmds 
+    unsigned lastFrame = 0;         
     const int fontSize = 20;
 
     while (!WindowShouldClose()) {
         const float dt = GetFrameTime();
         advanceAllAnims(dt); // advance animation clocks every tick
 
-        // Build the current frame contents from cmds until FLIP
-        // Build the current frame contents from cmds until FLIP
+       
 if (!cmds.empty()) {
-    // If we reached the end, loop playback (optional but nice)
+   
    if (!cmds.empty()) {
     if (idx >= cmds.size()) idx = 0;
 
@@ -404,7 +391,7 @@ if (!cmds.empty()) {
         }
     }
 
-    // If there was no CLS, keep previous scene
+   
 }
 
 
@@ -416,22 +403,22 @@ if (!cmds.empty()) {
 
     BeginMode2D(cam);
 
-    // draw any TEXT
+    // draw text
     for (const auto& t : scene.texts) {
         DrawText(t.s.c_str(), t.x, t.y, fontSize, BLACK);
     }
 
-    // draw any ANIM_DRAW
+    // draw
     drawAnims(scene);
 
     EndMode2D();
 
-    // (Optional) HUD footer here...
+    
 
     EndDrawing();
     }
 
-// ---------- cleanup AFTER the loop ----------
+
 for (auto& kv : g_anims) {
     if (kv.second.valid()) UnloadTexture(kv.second.tex);
 }
