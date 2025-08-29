@@ -18,7 +18,6 @@ Makefile
 
 # --- Logs and temporary files ---
 *.log
-*.cmdlog
 *.tmp
 
 # --- IDE / editor specific ---
