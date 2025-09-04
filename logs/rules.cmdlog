@@ -1,0 +1,39 @@
+HELLO V1 GAME "Rules" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 249 207 177 255
+
+FONT_LOAD 1 "assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 66 130 150 255         
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+TEXT 512 30 "RULES"
+
+FONT_COLOR 0 0 0 255
+FONT_SIZE 22
+TEXT_ALIGN CENTER
+TEXT 512 100 "1. Players will begin on opposite sides of the map, determining their own path."
+TEXT 512 120 "2. All battles are PVE until the last. The final battle is a faceoff of both players." 
+TEXT 512 140 "3. Players will take turns in movement and battle phases. Victory gains resources." 
+TEXT 512 160 "4. Players will accumulate cards from battles if victorious. These cards can be used once." 
+TEXT 512 180 "5. Cards may be saved for the final battle or used fighting NPCs for higher value cards." 
+TEXT 512 200 "6. Cards include boosts to attack, defense, and health."  
+TEXT 512 220 "7. Take turns attacking an NPC with or without cards."
+TEXT 512 240 "8. As the game progresses, NPC stats will raise." 
+TEXT 512 260 "9. After X# turns, the final battle shall begin." 
+TEXT 512 280 "10. The winner is the one who takes down the opponents LPs first." 
+TEXT 512 300 "11. Each Player begins with 10 in att, def, and HP." 
+TEXT 512 320 "12. Cards are used to enhance this. This is a turn based game with weaknesses and strengths."
+TEXT 512 340 "13. Melee > Ranged, Magic > Melee, Ranged > Magic."
+TEXT 512 360 "14. Depending on your entity, attack or defense cards are permanent. HP cards are always"
+TEXT 512 380 "    permanent. Be wise and save the cards you need the most."
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1
