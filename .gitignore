@@ -1,12 +1,20 @@
-# --- Build directories ---
+# --- Build directories / CMake ---
 build*/
+build_*/
 build_ok*/
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
 Makefile
+compile_commands.json
 
-# --- Compiled binaries ---
+# Visual Studio / MSVC extras
+.vs/
+*.vcxproj.user
+*.ilk
+*.ipch
+
+# --- Compiled binaries / objects ---
 *.exe
 *.dll
 *.o
@@ -19,6 +27,7 @@ Makefile
 # --- Logs and temporary files ---
 *.log
 *.tmp
+*.bak
 
 # --- IDE / editor specific ---
 .vscode/
@@ -34,5 +43,15 @@ Makefile
 Thumbs.db
 desktop.ini
 ~$*
-*.tmp
-*.bak
+
+# --- videos ---
+*.mp4
+*.mov
+*.mkv
+
+# --- firmware images --- 
+*.uf2
+*.bin
+
+
+logs/CMakeFiles/
