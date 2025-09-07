@@ -1,15 +1,14 @@
-# --- Build directories / CMake ---
-build*/
-build_*/
-build_ok*/
+# --- Build directories ---
+/build*/
+/cmake-build-*/
 CMakeFiles/
-CMakeCache.txt
-cmake_install.cmake
-Makefile
-compile_commands.json
+/CMakeCache.txt
+/cmake_install.cmake
+/Makefile
+/compile_commands.json  # keep if you generate it in repo root; otherwise remove
 
 # Visual Studio / MSVC extras
-.vs/
+/.vs/
 *.vcxproj.user
 *.ilk
 *.ipch
@@ -30,8 +29,8 @@ compile_commands.json
 *.bak
 
 # --- IDE / editor specific ---
-.vscode/
-.idea/
+/.vscode/
+/.idea/
 *.swp
 *.swo
 *.user
@@ -44,14 +43,18 @@ Thumbs.db
 desktop.ini
 ~$*
 
-# --- videos ---
+# --- Videos (we link externally) ---
 *.mp4
 *.mov
 *.mkv
 
-# --- firmware images --- 
+# --- Firmware / images ---
 *.uf2
 *.bin
+*.elf
+*.hex
+*.map
 
-
+# If someone accidentally ran CMake inside logs/
 logs/CMakeFiles/
+
