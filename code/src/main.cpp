@@ -12,6 +12,16 @@
 #include <unordered_map> // associative container (key→value) for animations by id
 #include <iomanip>
 
+
+
+enum class Align { Left, Center, Right };
+
+
+struct CmdCls        {};
+struct CmdFlip       { unsigned frame = 0; };
+struct CmdText       { int x = 0, y = 0; std::string s; int size = -1; Color col = BLACK; int fontIndex = -1; };
+
+// Images & animation
 struct AnimSheet {
     Texture2D tex{};         // loaded spritesheet texture
     int cols = 1, rows = 1;  // grid layout
@@ -25,14 +35,6 @@ struct AnimSheet {
 
     bool valid() const { return tex.id != 0; }
 };
-
-static std::unordered_map<int, AnimSheet> g_anims; // id → animation
-enum class Align { Left, Center, Right };
-
-struct CmdCls        {};
-struct CmdFlip       { unsigned frame = 0; };
-struct CmdText       { int x = 0, y = 0; std::string s; int size = -1; Color col = BLACK; int fontIndex = -1; };
-// Images & animation
 struct CmdImgLoadSheet { int id; std::string path; int cols; int rows; }; // clear scene for next frame
 struct CmdAnimSetFps   { int id; float fps; };              // present frame & tag a frame number
 struct CmdAnimDraw     { int id; int x; int y; float scale; }; // draw txt string
@@ -43,6 +45,9 @@ struct Scene {
     void clear() { texts.clear(); anims.clear(); }
 };
 struct CmdAnimSetTotal { int id; int total; }; // frame cap
+
+
+// font and color
 struct CmdFontSize { int size; };
 struct FontRes { Font font{}; bool loaded=false; };
 struct CmdBg { int r=0, g=0, b=0, a=255; };
@@ -52,6 +57,8 @@ struct CmdFontColor  { unsigned char r,g,b,a; };
 struct CmdTextAlign  { Align a; };
 struct CmdTextSpacing{ float px; };
 
+
+static std::unordered_map<int, AnimSheet> g_anims; // id → animation
 static int g_font_size = 20; 
 static std::unordered_map<int, FontRes> g_fonts;
 static int   g_currentFont = -1;              // -1 = raylib default
@@ -59,7 +66,7 @@ static Color g_textColor   = BLACK;
 static Align g_textAlign   = Align::Left;
 static float g_textSpacing = 1.0f;
 
-//background color
+
 
 // Variant that can hold any command 
 using Command = std::variant<
@@ -69,8 +76,11 @@ using Command = std::variant<
     CmdFontUse, CmdFontColor, CmdTextAlign, CmdTextSpacing
 >;
 /*
-// utilities // 
+█░█ ▀█▀ █ █░░ █ ▀█▀ █ █▀▀ █▀
+█▄█ ░█░ █ █▄▄ █ ░█░ █ ██▄ ▄█
 */
+
+
 // removes leading/trailing whitespace, e.g. "    yo   " → "yo"
 static inline std::string trim(const std::string& s) {
     size_t a = s.find_first_not_of(" \t\r\n");
@@ -94,12 +104,30 @@ static std::string join_path(const std::string& a, const std::string& b) {
     if (last == '/' || last == '\\') return a + b;
     return a + "/" + b;
 }
+
+static inline bool is_absolute_path(const std::string& p) {
+    return !p.empty() && (p[0] == '/' || p[0] == '\\' || (p.size() > 1 && p[1] == ':'));
+}
+
+static inline bool ensure_file(const std::string& full, const char* what) {
+    if (!FileExists(full.c_str())) {               // raylib helper
+        TraceLog(LOG_ERROR, "%s missing: %s", what, full.c_str());
+        return false;
+    }
+    return true;
+}
+
 /* 
-// end utiltiies
+█▀▀ █▄░█ █▀▄   █░█ ▀█▀ █ █░░ █ ▀█▀ █ █▀▀ █▀
+██▄ █░▀█ █▄▀   █▄█ ░█░ █ █▄▄ █ ░█░ █ ██▄ ▄█
 */ 
+
+
 /*
-// parsers
+█▀█ ▄▀█ █▀█ █▀ █▀▀ █▀█ █▀
+█▀▀ █▀█ █▀▄ ▄█ ██▄ █▀▄ ▄█
 */
+
 // declarations so parseLine can reference 
 static std::optional<CmdAnimSetTotal> parseAnimSetTotal(const std::string& line);
 static void doAnimSetTotal(const CmdAnimSetTotal& c);
@@ -145,12 +173,16 @@ static std::optional<CmdText> parseText(const std::string& line) {
     return CmdText{ x, y, out, -1 };
 }
 
-static std::optional<CmdFontSize> parseFontSize(const std::string& line) {
-    std::istringstream ss(line);
-    std::string k; int sz;
-    if (ss >> k && k == "FONT_SIZE" && ss >> sz) return CmdFontSize{sz};
-    return std::nullopt;
-}
+
+
+
+/*
+█▀█ ▄▀█ █▀█ █▀ █▀▀
+█▀▀ █▀█ █▀▄ ▄█ ██▄
+▄▀█ █▄░█ █ █▀▄▀█ ▄▀█ ▀█▀ █ █▀█ █▄░█
+█▀█ █░▀█ █ █░▀░█ █▀█ ░█░ █ █▄█ █░▀█         
+*/
+
 
 // image load, id, path, col, row
 static std::optional<CmdImgLoadSheet> parseImgLoadSheet(const std::string& line) {
@@ -188,6 +220,78 @@ static std::optional<CmdAnimDraw> parseAnimDraw(const std::string& line) {
     if (ss >> op >> id >> x >> y >> scale) return CmdAnimDraw{ id, x, y, scale };
     return std::nullopt;
 }
+
+
+static std::optional<CmdAnimSetTotal> parseAnimSetTotal(const std::string& line) {
+    std::istringstream ss(line);
+    std::string op; int id, total;
+    if (ss >> op >> id >> total) return CmdAnimSetTotal{ id, total };
+    return std::nullopt;
+}
+// apply frame cap 
+static void doAnimSetTotal(const CmdAnimSetTotal& c) {
+    auto it = g_anims.find(c.id);
+    if (it != g_anims.end()) {
+        int maxFrames = it->second.cols * it->second.rows;
+        if (c.total > 0 && c.total <= maxFrames) {
+            it->second.total = c.total;
+            if (it->second.frameIndex >= c.total) {
+                it->second.frameIndex = 0; // reset if out of range
+            }
+        }
+    }
+}
+// bg rgba values for bg color
+static std::optional<CmdBg> parseBg(const std::string& line) {
+    std::istringstream iss(line);
+    std::string op; int r,g,b,a;
+    if (!(iss >> op)) return std::nullopt;
+    if (op != "BG") return std::nullopt;
+    if (!(iss >> r >> g >> b >> a)) return std::nullopt;
+    return CmdBg{r,g,b,a};
+}
+
+
+/*
+█▀█ ▄▀█ █▀█ █▀ █▀▀
+█▀▀ █▀█ █▀▄ ▄█ ██▄             
+█▀▀ █▀█ █▄░█ ▀█▀
+█▀░ █▄█ █░▀█ ░█░            // trouble using 2 fonts in 1 cmdlog file
+*/
+
+
+static std::optional<CmdFontSize> parseFontSize(const std::string& line) {
+    std::istringstream ss(line);
+    std::string k; int sz;
+    if (ss >> k && k == "FONT_SIZE" && ss >> sz) return CmdFontSize{sz};
+    return std::nullopt;
+}
+
+static std::optional<CmdFontLoad> parseFontLoad(const std::string& ln){
+    std::istringstream is(ln); std::string op; int id, px; std::string p;
+    if(!(is>>op>>id>>std::quoted(p)>>px)) return std::nullopt;
+    return CmdFontLoad{id,p,px};
+}
+
+static std::optional<CmdFontUse> parseFontUse(const std::string& ln){
+    std::istringstream is(ln); std::string op; int id; if(!(is>>op>>id)) return std::nullopt; return CmdFontUse{id};
+}
+
+static std::optional<CmdFontColor> parseFontColor(const std::string& ln){
+    std::istringstream is(ln); std::string op; int r,g,b,a; if(!(is>>op>>r>>g>>b>>a)) return std::nullopt;
+    return CmdFontColor{(unsigned char)r,(unsigned char)g,(unsigned char)b,(unsigned char)a};
+}
+
+static std::optional<CmdTextAlign> parseTextAlign(const std::string& ln){
+    std::istringstream is(ln); std::string op, val; if(!(is>>op>>val)) return std::nullopt;
+    Align a = (val=="CENTER"?Align::Center: val=="RIGHT"?Align::Right: Align::Left);
+    return CmdTextAlign{a};
+}
+
+static std::optional<CmdTextSpacing> parseTextSpacing(const std::string& ln){
+    std::istringstream is(ln); std::string op; float px; if(!(is>>op>>px)) return std::nullopt; return CmdTextSpacing{px};
+}
+
 
 // Decide which concrete command a line represents
 //CLS, FLIP, TEXT, IMAGE_LOAD_SHEET, etc. 
@@ -240,62 +344,13 @@ static std::optional<Command> parseLine(const std::string& raw) {
     return std::nullopt;
 }
 
-static std::optional<CmdAnimSetTotal> parseAnimSetTotal(const std::string& line) {
-    std::istringstream ss(line);
-    std::string op; int id, total;
-    if (ss >> op >> id >> total) return CmdAnimSetTotal{ id, total };
-    return std::nullopt;
-}
-// apply frame cap 
-static void doAnimSetTotal(const CmdAnimSetTotal& c) {
-    auto it = g_anims.find(c.id);
-    if (it != g_anims.end()) {
-        int maxFrames = it->second.cols * it->second.rows;
-        if (c.total > 0 && c.total <= maxFrames) {
-            it->second.total = c.total;
-            if (it->second.frameIndex >= c.total) {
-                it->second.frameIndex = 0; // reset if out of range
-            }
-        }
-    }
-}
-// bg rgba values
-static std::optional<CmdBg> parseBg(const std::string& line) {
-    std::istringstream iss(line);
-    std::string op; int r,g,b,a;
-    if (!(iss >> op)) return std::nullopt;
-    if (op != "BG") return std::nullopt;
-    if (!(iss >> r >> g >> b >> a)) return std::nullopt;
-    return CmdBg{r,g,b,a};
-}
 
-static std::optional<CmdFontLoad> parseFontLoad(const std::string& ln){
-    std::istringstream is(ln); std::string op; int id, px; std::string p;
-    if(!(is>>op>>id>>std::quoted(p)>>px)) return std::nullopt;
-    return CmdFontLoad{id,p,px};
-}
-
-static std::optional<CmdFontUse> parseFontUse(const std::string& ln){
-    std::istringstream is(ln); std::string op; int id; if(!(is>>op>>id)) return std::nullopt; return CmdFontUse{id};
-}
-
-static std::optional<CmdFontColor> parseFontColor(const std::string& ln){
-    std::istringstream is(ln); std::string op; int r,g,b,a; if(!(is>>op>>r>>g>>b>>a)) return std::nullopt;
-    return CmdFontColor{(unsigned char)r,(unsigned char)g,(unsigned char)b,(unsigned char)a};
-}
-
-static std::optional<CmdTextAlign> parseTextAlign(const std::string& ln){
-    std::istringstream is(ln); std::string op, val; if(!(is>>op>>val)) return std::nullopt;
-    Align a = (val=="CENTER"?Align::Center: val=="RIGHT"?Align::Right: Align::Left);
-    return CmdTextAlign{a};
-}
-
-static std::optional<CmdTextSpacing> parseTextSpacing(const std::string& ln){
-    std::istringstream is(ln); std::string op; float px; if(!(is>>op>>px)) return std::nullopt; return CmdTextSpacing{px};
-}
 /*
-end parsers
+█▀▀ █▄░█ █▀▄   █▀█ ▄▀█ █▀█ █▀ █▀▀ █▀█ █▀
+██▄ █░▀█ █▄▀   █▀▀ █▀█ █▀▄ ▄█ ██▄ █▀▄ ▄█
 */
+
+
 
 /*
 // command executors and animation runtime 
@@ -303,7 +358,7 @@ end parsers
 static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir) {
     // Resolve path relative to the .cmdlog directory
     std::string full = c.path;
-    bool absolute = (full.size() > 1 && (full[1] == ':' || full[0] == '/' || full[0] == '\\'));
+    bool absolute = is_absolute_path(full);
     if (!absolute) full = join_path(baseDir, c.path);
 
     // If already loaded, don't reset frame
@@ -312,14 +367,18 @@ static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir)
        
         return;
     }
+    
+    if (!ensure_file(full, "TEXTURE")) {
+        return;  // leave animation missing; draw will just skip
+    }
+    
     // load texture 
     AnimSheet anim;
     anim.tex = LoadTexture(full.c_str());
     if (anim.tex.id == 0) {
-        TraceLog(LOG_WARNING, "Failed to load texture: %s", full.c_str());
+        TraceLog(LOG_ERROR, "LoadTexture failed: %s", full.c_str());
         return;
     }
-
     SetTextureFilter(anim.tex, TEXTURE_FILTER_POINT);
 
     anim.cols   = std::max(1, c.cols);
@@ -385,9 +444,10 @@ static Color getBgForFrame(const std::vector<Command>& frameCmds, Color fallback
 std::vector<Command> frameCmds;
 
 
-// -----------------------------------------------------------------------------
-// Main
-// -----------------------------------------------------------------------------
+/*
+█▀▄▀█ ▄▀█ █ █▄░█
+█░▀░█ █▀█ █ █░▀█
+*/
 
 int main(int argc, char** argv) {
     // resoluton
@@ -400,6 +460,9 @@ int main(int argc, char** argv) {
 
     // Create window and 2D camera (zoom == integer scale)
     InitWindow(logicalW * windowScale, logicalH * windowScale, "Command Viewer (raylib)"); // window name + dims
+
+    SetTraceLogLevel(LOG_INFO);  // loud checks in console (linux not alligning cmdlog text)
+    
     SetTargetFPS(60);
 
     Camera2D cam{};
@@ -485,12 +548,31 @@ if (!cmds.empty()) {    // Build the current frame contents from cmds until the 
                 break;
             }
         else if (std::holds_alternative<CmdFontLoad>(cmds[idx])) {
-            auto c = std::get<CmdFontLoad>(cmds[idx]);
-        if (!g_fonts[c.id].loaded){
-            g_fonts[c.id].font = LoadFontEx(c.path.c_str(), c.sizePx, nullptr, 0);
+    	auto c = std::get<CmdFontLoad>(cmds[idx]);
+    	if (!g_fonts[c.id].loaded) {
+        // Resolve font path relative to the .cmdlog directory
+        std::string full = c.path;
+        if (!is_absolute_path(full)) full = join_path(baseDir, c.path);
+
+        // Loud check before we try to load
+        if (!ensure_file(full, "FONT")) {
+            // fall back so drawing still works (centering will use default metrics)
+            g_fonts[c.id].font   = GetFontDefault();
+            g_fonts[c.id].loaded = true;
+        } else {
+            Font f = LoadFontEx(full.c_str(), c.sizePx, nullptr, 0);
+            if (f.baseSize == 0) {
+                TraceLog(LOG_ERROR, "LoadFontEx failed: %s", full.c_str());
+                g_fonts[c.id].font = GetFontDefault();
+            } else {
+                TraceLog(LOG_INFO, "Loaded font[%d]: %s (size=%d)", c.id, full.c_str(), c.sizePx);
+                g_fonts[c.id].font = f;
+            }
             g_fonts[c.id].loaded = true;
         }
-        }
+    }
+}
+
         else if (std::holds_alternative<CmdFontUse>(cmds[idx])) {
             g_currentFont = std::get<CmdFontUse>(cmds[idx]).id;
         }
@@ -568,14 +650,13 @@ CloseWindow();
 return 0;}
 
 
-/* 
-$TOOLS = "$HOME\Tools"
-$env:Path = "$TOOLS\cmake-4.1.0-windows-x86_64\bin;$env:Path"
-
-$env:Path = "$TOOLS\mingw\mingw64\bin;$env:Path"
-
-cd C:\Users\robhu\boardgame\build_ok6
-cmake ..\code -G "MinGW Makefiles"
-mingw32-make -j4
+/* WINDOWS
 .\cmdviewer.exe ..\logs\sample.cmdlog
+*/
+
+
+/* LINUX
+cmake -S code -B build
+cmake --build build -j
+./build/cmdviewer logs/name.cmdfile
 */

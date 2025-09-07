@@ -4,9 +4,9 @@ VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
 CLS
 BG 249 207 177 255
 
-FONT_LOAD 1 "assets/AtkinsonHyperlegible-Regular.ttf" 64
-FONT_LOAD 2 "assets/AtkinsonHyperlegible-Bold.ttf"    64
-FONT_USE  1
+# FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  2
 
 FONT_COLOR 66 130 150 255         
 FONT_SIZE 72

@@ -5,7 +5,7 @@ CMakeFiles/
 /CMakeCache.txt
 /cmake_install.cmake
 /Makefile
-/compile_commands.json  # keep if you generate it in repo root; otherwise remove
+/compile_commands.json
 
 # Visual Studio / MSVC extras
 /.vs/
@@ -55,6 +55,8 @@ desktop.ini
 *.hex
 *.map
 
-# If someone accidentally ran CMake inside logs/
+
 logs/CMakeFiles/
 
+
+raylib/
