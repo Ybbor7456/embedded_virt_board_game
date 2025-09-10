@@ -11,15 +11,26 @@
 #include <vector>
 #include <unordered_map> // associative container (key→value) for animations by id
 #include <iomanip>
+#include <string>
+#include <vector>
+#include <functional> //
+#include <cctype>
 
 
-
-enum class Align { Left, Center, Right };
-
+enum class Align { Left, Center, Right }; //allignment
+enum class Screen { Title, Rules, Instructions, Game }; // boxes
+enum class UIMode { Normal, Fallback };
 
 struct CmdCls        {};
 struct CmdFlip       { unsigned frame = 0; };
-struct CmdText       { int x = 0, y = 0; std::string s; int size = -1; Color col = BLACK; int fontIndex = -1; };
+struct CmdText       { 
+    int x = 0, 
+    y = 0; 
+    std::string s; 
+    int size = -1; 
+    Color col = BLACK; 
+    int fontIndex = -1; 
+    };
 
 // Images & animation
 struct AnimSheet {
@@ -35,37 +46,93 @@ struct AnimSheet {
 
     bool valid() const { return tex.id != 0; }
 };
-struct CmdImgLoadSheet { int id; std::string path; int cols; int rows; }; // clear scene for next frame
-struct CmdAnimSetFps   { int id; float fps; };              // present frame & tag a frame number
-struct CmdAnimDraw     { int id; int x; int y; float scale; }; // draw txt string
-struct DrawAnim { int id; int x; int y; float scale; }; //draw lists of sprites and text
+struct CmdImgLoadSheet {
+    int id;
+    std::string path;
+    int cols;
+    int rows;
+};
+// clear scene for next frame
+struct CmdAnimSetFps   {
+    int id;
+    float fps; 
+};              
+// present frame & tag a frame number
+struct CmdAnimDraw     {
+    int id;
+    int x; 
+    int y; 
+    float scale;
+    }; // draw txt string
+
+struct DrawAnim { 
+    int id; 
+    int x; 
+    int y; 
+    float scale; }; //draw lists of sprites and text
+
+
+
 struct Scene {
     std::vector<CmdText>  texts;  // text
     std::vector<DrawAnim> anims;  // sprites
     void clear() { texts.clear(); anims.clear(); }
 };
-struct CmdAnimSetTotal { int id; int total; }; // frame cap
+
+struct CmdAnimSetTotal { 
+    int id; 
+    int total; }; // frame cap
 
 
 // font and color
 struct CmdFontSize { int size; };
-struct FontRes { Font font{}; bool loaded=false; };
-struct CmdBg { int r=0, g=0, b=0, a=255; };
-struct CmdFontLoad   { int id; std::string path; int sizePx; };
+struct FontRes { 
+    Font font{};
+    bool loaded=false;
+    };
+struct CmdBg { 
+    int r=0, g=0, b=0, a=255; };
+struct CmdFontLoad   { 
+    int id;
+    std::string path; 
+    int sizePx; 
+    };
 struct CmdFontUse    { int id; };
 struct CmdFontColor  { unsigned char r,g,b,a; };
 struct CmdTextAlign  { Align a; };
 struct CmdTextSpacing{ float px; };
 
 
+// interacting boxes
+
+struct MenuItem {
+    std::string id; 
+    std::string label;
+    Rectangle rect;                         //visual button region
+    std::string targetLog;                  //targeted screen log
+    
+};
+
+struct AppState{Screen screen = Screen::Title; 
+    int selected = 0;
+    std::vector<MenuItem> tileMenu;
+    Color focusColor      = YELLOW;         // outline color for selected item
+    float focusThickness  = 3.0f;           // outline thickness
+    Color focusShadow    = CLITERAL(Color){  0,   0,   0,  80};
+    Color idleOutline    = CLITERAL(Color){255, 255, 255, 48};
+ };
+struct CmdHitbox { std::string id; Rectangle r; };           
+struct CmdTarget { std::string id; std::string path; }; 
+
+
 static std::unordered_map<int, AnimSheet> g_anims; // id → animation
 static int g_font_size = 20; 
 static std::unordered_map<int, FontRes> g_fonts;
-static int   g_currentFont = -1;              // -1 = raylib default
 static Color g_textColor   = BLACK;
 static Align g_textAlign   = Align::Left;
 static float g_textSpacing = 1.0f;
-
+static UIMode gMode = UIMode::Normal;
+static std::string gLastError;
 
 
 // Variant that can hold any command 
@@ -73,20 +140,48 @@ using Command = std::variant<
     CmdCls, CmdFlip, CmdText,
     CmdImgLoadSheet, CmdAnimSetFps, CmdAnimDraw,
     CmdAnimSetTotal, CmdBg, CmdFontSize, CmdFontLoad, 
-    CmdFontUse, CmdFontColor, CmdTextAlign, CmdTextSpacing
+    CmdFontUse, CmdFontColor, CmdTextAlign, CmdTextSpacing,
+    CmdHitbox, CmdTarget
 >;
+
 /*
 █░█ ▀█▀ █ █░░ █ ▀█▀ █ █▀▀ █▀
 █▄█ ░█░ █ █▄▄ █ ░█░ █ ██▄ ▄█
 */
 
-
 // removes leading/trailing whitespace, e.g. "    yo   " → "yo"
+
+
 static inline std::string trim(const std::string& s) {
     size_t a = s.find_first_not_of(" \t\r\n");
     size_t b = s.find_last_not_of(" \t\r\n");
     if (a == std::string::npos) return "";
     return s.substr(a, b - a + 1);
+}
+
+
+static inline std::string lower_copy(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(),
+                   [](unsigned char c){ return (char)std::tolower(c); });
+    return s;
+}
+
+static inline std::string normalize_key(const std::string& s) {
+    return lower_copy(trim(s));   // reuse your trim()
+}
+
+static MenuItem* findMenuItem(AppState& S, const std::string& key) {
+    const std::string k = normalize_key(key);
+
+    // 1) try id
+    for (auto& it : S.tileMenu)
+        if (!it.id.empty() && normalize_key(it.id) == k) return &it;
+
+    // 2) fallback to label
+    for (auto& it : S.tileMenu)
+        if (normalize_key(it.label) == k) return &it;
+
+    return nullptr;
 }
 
 // xtract the directory portion of a path
@@ -138,6 +233,8 @@ static std::optional<CmdFontUse>      parseFontUse(const std::string& line);
 static std::optional<CmdFontColor>    parseFontColor(const std::string& line);
 static std::optional<CmdTextAlign>    parseTextAlign(const std::string& line);
 static std::optional<CmdTextSpacing>  parseTextSpacing(const std::string& line);
+static bool LoadCmdLog(const std::string& path, std::vector<Command>& out);
+
 // 
 static std::optional<CmdText> parseText(const std::string& line) {
     std::istringstream iss(line);
@@ -187,7 +284,8 @@ static std::optional<CmdText> parseText(const std::string& line) {
 // image load, id, path, col, row
 static std::optional<CmdImgLoadSheet> parseImgLoadSheet(const std::string& line) {
     std::istringstream ss(line);
-    std::string op; int id, cols, rows;
+    std::string op; 
+    int id, cols, rows;
     if (!(ss >> op >> id)) return std::nullopt;
 
     // find double quotes 
@@ -292,11 +390,47 @@ static std::optional<CmdTextSpacing> parseTextSpacing(const std::string& ln){
     std::istringstream is(ln); std::string op; float px; if(!(is>>op>>px)) return std::nullopt; return CmdTextSpacing{px};
 }
 
+static inline std::string trim_and_strip_comment(std::string s) {
+    // strip '#' comment
+    if (auto p = s.find('#'); p != std::string::npos) s.resize(p);
+    // trim ends
+    auto wsfront = std::find_if_not(s.begin(), s.end(), ::isspace);
+    auto wsback  = std::find_if_not(s.rbegin(), s.rend(), ::isspace).base();
+    if (wsfront >= wsback) return {};
+    return std::string(wsfront, wsback);
+}
+
+static inline std::pair<std::string, std::vector<std::string>>
+
+lex_cmd(const std::string& s) {
+    std::vector<std::string> out;
+    std::string cur;
+    bool inQ = false;
+
+    for (size_t i = 0; i < s.size(); ++i) {
+        char c = s[i];
+        if (c == '"') { inQ = !inQ; continue; }
+        if (!inQ && (c == ' ' || c == '\t' || c == '\r' || c == '\n')) {
+            if (!cur.empty()) { out.push_back(cur); cur.clear(); }
+            continue;
+        }
+        cur.push_back(c);
+    }
+    if (!cur.empty()) out.push_back(cur);
+
+    std::string op = out.empty() ? "" : out.front();
+    if (!out.empty()) out.erase(out.begin());
+    return {op, out};
+}
+
 
 // Decide which concrete command a line represents
 //CLS, FLIP, TEXT, IMAGE_LOAD_SHEET, etc. 
 static std::optional<Command> parseLine(const std::string& raw) {
     std::string line = trim(raw);
+    std::string line2 = trim_and_strip_comment(raw);
+    
+
     if (line.empty()) return std::nullopt;
 
     if (line.rfind("CLS", 0) == 0)  return Command{ CmdCls{} };
@@ -341,8 +475,43 @@ static std::optional<Command> parseLine(const std::string& raw) {
     if (line.rfind("TEXT_ALIGN", 0)  == 0) { if (auto c = parseTextAlign(line))  return Command{*c}; }
     if (line.rfind("TEXT_SPACING",0) == 0) { if (auto c = parseTextSpacing(line))return Command{*c}; }
 
+    auto [op, args] = lex_cmd(line);
+    if (op == "HITBOX" && args.size() == 5) {
+    CmdHitbox c;
+    c.id = args[0];
+    c.r  = Rectangle{ std::stof(args[1]), std::stof(args[2]),
+                      std::stof(args[3]), std::stof(args[4]) };
+    return Command{c};
+}
+    
+// TARGET id path
+    if (op == "TARGET" && args.size() >= 2) {
+    CmdTarget c;
+    c.id   = args[0];
+    c.path = args[1]; // keep as-is; your loader can resolve relative paths
+    return Command{c};
+}
+
+    std::istringstream ss(line);
+    std::string id; float x,y,w,h;
+    if (ss >> op >> id >> x >> y >> w >> h; op == "HITBOX") {
+        return Command{ CmdHitbox{ id, Rectangle{ x,y,w,h } } };
+    }
+
+    if (line.rfind("TARGET", 0) == 0) {
+    std::string op, id;
+    std::istringstream ss(line);
+    ss >> op >> id;
+    size_t q1 = line.find('"');
+    size_t q2 = line.find('"', q1 + 1);
+    if (q1 != std::string::npos && q2 != std::string::npos) {
+        std::string p = line.substr(q1 + 1, q2 - q1 - 1);
+        return Command{ CmdTarget{ id, p } };
+    }
+}
     return std::nullopt;
 }
+
 
 
 /*
@@ -355,6 +524,27 @@ static std::optional<Command> parseLine(const std::string& raw) {
 /*
 // command executors and animation runtime 
 */
+
+
+static bool LoadCmdLog(const std::string& path, std::vector<Command>& out) {
+    out.clear();
+
+    std::ifstream fin(path);
+    if (!fin) {
+        TraceLog(LOG_ERROR, "Could not open cmdlog: %s", path.c_str());
+        return false;
+    }
+
+    std::string line;
+    while (std::getline(fin, line)) {
+        if (auto c = parseLine(line)) {
+            out.push_back(std::move(*c));
+        }
+    }
+    return true;
+}
+
+
 static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir) {
     // Resolve path relative to the .cmdlog directory
     std::string full = c.path;
@@ -363,7 +553,7 @@ static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir)
 
     // If already loaded, don't reset frame
     auto it = g_anims.find(c.id);
-    if (it != g_anims.end() && it->second.valid()) {
+    if (it != g_anims.end() && it->second.valid()) { //prevents unneeded load frames
        
         return;
     }
@@ -439,9 +629,140 @@ static Color getBgForFrame(const std::vector<Command>& frameCmds, Color fallback
         }
     }
     return bg;
-}
+    }
 
 std::vector<Command> frameCmds;
+
+
+
+static inline bool BtnUp()    { return IsKeyPressed(KEY_UP);    }
+static inline bool BtnDown()  { return IsKeyPressed(KEY_DOWN);  }
+static inline bool BtnLeft()  { return IsKeyPressed(KEY_LEFT);  }
+static inline bool BtnRight() { return IsKeyPressed(KEY_RIGHT); }
+static inline bool BtnA()     { return IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE); }
+static inline bool BtnB()     { return IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_ESCAPE); }
+
+
+
+static inline void DrawFocusBox(const Rectangle& r, Color outline, float thickness, Color shadow) {
+    DrawRectangleLinesEx({ r.x + 2, r.y + 2, r.width, r.height }, thickness, shadow);
+    DrawRectangleLinesEx(r, thickness, outline);
+}
+
+
+/* Build the Title menu: labels, target logs, and hit-rects */
+void initTitleMenu(AppState& S) {
+    //AppState S;
+    S.screen   = Screen::Title;
+    
+    // --- Define your 3 options here ---
+    // Adjust targetLog filenames to match repo (e.g., "logs/title.cmdlog")
+    S.tileMenu.clear();
+    S.tileMenu.push_back({ "start", "Start",        {0,0,0,0}, "logs/start.cmdlog" });
+    S.tileMenu.push_back({ "rules", "Rules",        {0,0,0,0}, "logs/rules.cmdlog" });
+    S.tileMenu.push_back({ "description", "Description", {0,0,0,0}, "logs/description.cmdlog" });
+    S.selected = 0;
+    // --- Layout: center the 3 buttons in the logical space ---
+    const int logicalW = 1024;
+    const int logicalH = 576;
+
+    // Use the current font size for a sensible box. (g_font_size is already global.)
+    const int   padX       = 24;
+    const int   padY       = 12;
+    const int   spacingY   = 56;   // vertical space between items
+    const float fontPx     = (float)g_font_size;
+    Font        font       = GetFontDefault();   // safe fallback for measuring
+
+    // First item y so that the three items are vertically centered
+    const int totalH = (int)(3 * (fontPx + padY * 2) + 2 * spacingY);
+    int y = (logicalH - totalH) / 2;
+
+    for (auto& it : S.tileMenu) {
+        // Measure label and make a padded rectangle
+        Vector2 txt = MeasureTextEx(font, it.label.c_str(), fontPx, 1.0f);
+        float w = txt.x + padX * 2;
+        float h = txt.y + padY * 2;
+        float x = (logicalW - w) * 0.5f;
+
+        it.rect = { x, (float)y, w, h };
+        y += (int)(h + spacingY);
+    }
+}
+
+// Handle up/down selection at the title screen 
+void UpdateTitle(AppState& S) {
+    if (S.tileMenu.empty()) return;
+
+    const int n = (int)S.tileMenu.size();
+    if (BtnUp())    { S.selected = (S.selected - 1 + n) % n; }
+    if (BtnDown())  { S.selected = (S.selected + 1) % n; }
+
+    // Optional: allow left/right as synonyms for up/down
+    if (BtnLeft())  { S.selected = (S.selected - 1 + n) % n; }
+    if (BtnRight()) { S.selected = (S.selected + 1) % n; }
+
+    // NOTE: Do NOT call LoadCmdLog here (cmds is in main).
+    // In your main loop, when BtnA() is pressed, read:
+    //   const std::string& path = S.tileMenu[S.selected].targetLog;
+    //   LoadCmdLog(path, cmds);
+}
+
+/* Reset state when you go "back" to title (B button). */
+void HandleBackToTitle(AppState& S) {
+    S.screen   = Screen::Title;
+    S.selected = 0;
+    // If you want to re-center/recompute rects, re-init:
+    // initTitleMenu(S);
+    // NOTE: Do NOT load the file here; do it in main where 'cmds' exists.
+}
+
+/* Draws the overlay (the focus ring) over the current menu item */
+void DrawMenuOverlay(const AppState& S) {
+    if (S.screen != Screen::Title) return;
+    if (S.tileMenu.empty()) return;
+
+    // Draw faint boxes for all items (optional)
+    for (size_t i = 0; i < S.tileMenu.size(); ++i) {
+    const Rectangle& r = S.tileMenu[i].rect;
+    Color c = (i == (size_t)S.selected) ? Fade(S.focusColor, 0.25f) : S.idleOutline;
+    DrawRectangleLinesEx(r, 1.0f, c);
+}
+
+    // Emphasize the focused one
+    DrawFocusBox(S.tileMenu[S.selected].rect, S.focusColor, S.focusThickness, S.focusShadow);
+}
+
+
+
+static void ApplyUiMetaFromCmds(AppState& S, const std::vector<Command>& cmds) {
+    auto findItem = [&](const std::string& key) -> MenuItem* {
+        const std::string k = normalize_key(key);
+
+        // 1) by id (preferred)
+        for (auto& it : S.tileMenu)
+            if (!it.id.empty() && normalize_key(it.id) == k) return &it;
+
+        // 2) fallback by label text (e.g., "Start", "Rules", "Description")
+        for (auto& it : S.tileMenu)
+            if (normalize_key(it.label) == k) return &it;
+
+        return nullptr;
+    };
+
+    int nHit = 0, nTgt = 0;
+
+    for (const auto& cmd : cmds) {
+        if (auto p = std::get_if<CmdHitbox>(&cmd)) {
+            if (auto* it = findItem(p->id)) { it->rect = p->r; ++nHit; }
+            else TraceLog(LOG_WARNING, "HITBOX key '%s' did not match any menu item", p->id.c_str());
+        } else if (auto p2 = std::get_if<CmdTarget>(&cmd)) {
+            if (auto* it = findItem(p2->id)) { it->targetLog = p2->path; ++nTgt; }
+            else TraceLog(LOG_WARNING, "TARGET key '%s' did not match any menu item", p2->id.c_str());
+        }
+    }
+
+    TraceLog(LOG_INFO, "Applied %d HITBOX and %d TARGET entries", nHit, nTgt);
+}
 
 
 /*
@@ -454,7 +775,7 @@ int main(int argc, char** argv) {
     const int logicalW = 1024, logicalH = 576;
 
     int windowScale = 1;
-    const char* filePath = "sample.cmdlog"; // name of path for .cmdlog
+    std::string filePath = (argc > 1) ? argv[1] : "logs/title.cmdlog"; // name of path for .cmdlog
     if (argc > 1) filePath = argv[1];        // .\cmdviewer.exe ..\logs\sample.cmdlog
     if (argc > 2) windowScale = std::max(1, std::atoi(argv[2]));
 
@@ -465,175 +786,206 @@ int main(int argc, char** argv) {
     
     SetTargetFPS(60);
 
+    AppState S;
+    initTitleMenu(S);
+
+    Scene scene;
     Camera2D cam{};
     cam.zoom = static_cast<float>(windowScale);
 
     // load command log
-    std::ifstream fin(filePath); // file input stream
-    if (!fin) {
-        TraceLog(LOG_WARNING, "Could not open %s. Ensure you run: ./cmdviewer ../logs/sample.cmdlog or other name", filePath);
-    }
-
-    // Parse all command
     std::vector<Command> cmds;
-    if (fin) {
-        std::string line;
-        while (std::getline(fin, line)) {
-            if (auto c = parseLine(line)) cmds.push_back(std::move(*c));
-        }
-    }
+    const std::string& path = S.tileMenu[S.selected].targetLog;
+    if (LoadCmdLog(filePath, cmds)) {
+        ApplyUiMetaFromCmds(S, cmds);   // <-- pulls HITBOX/TARGET from the file
+        } 
+    else {
+        CloseWindow();
+        return 1;        // bail
+         }
+    
+    
 
     const std::string baseDir = dirname_of(filePath); // for resolving relative asset paths
 
-    Scene scene;
+    
     size_t idx = 0;                  // index into cmds 
    // unsigned lastFrame = 0;         
     // const int fontSize = 20; 
     // ^^ swapped for g_fontsize
 
-    while (!WindowShouldClose()) {
-        const float dt = GetFrameTime();
-        advanceAllAnims(dt); // advance animation clocks every tick
-
-       
-if (!cmds.empty()) {    // Build the current frame contents from cmds until the next FLIP
-   
-   if (!cmds.empty()) {     
-    if (idx >= cmds.size()) idx = 0;    // loop playback when reaching end
-
-
-    // bool didCls = false;    // tracks whether this frame started with CLS
-    //build loop
-    int currentFont = g_font_size;
     
-    for (; idx < cmds.size(); ++idx) {
-        if (std::holds_alternative<CmdCls>(cmds[idx])) {
-            scene.clear();
-            frameCmds.clear();
-            //didCls = true;
-        }
-        else if (std::holds_alternative<CmdText>(cmds[idx])) {
-            CmdText t = std::get<CmdText>(cmds[idx]);
-            if (t.size <= 0) t.size = g_font_size;     // freeze size
-            t.col       = g_textColor;                 // freeze color
-            t.fontIndex = g_currentFont;               // freeze which font
-            scene.texts.push_back(std::move(t));
-            frameCmds.push_back(cmds[idx]);
-        }
 
-        else if (std::holds_alternative<CmdImgLoadSheet>(cmds[idx])) {
-                doImgLoadSheet(std::get<CmdImgLoadSheet>(cmds[idx]), baseDir);
-            }
-        else if (std::holds_alternative<CmdAnimSetFps>(cmds[idx])) {
-                doAnimSetFps(std::get<CmdAnimSetFps>(cmds[idx]));
-            }
-        else if (std::holds_alternative<CmdAnimSetTotal>(cmds[idx])) {
-                doAnimSetTotal(std::get<CmdAnimSetTotal>(cmds[idx]));
-            }
-        else if (std::holds_alternative<CmdAnimDraw>(cmds[idx])) {
-                const auto& c = std::get<CmdAnimDraw>(cmds[idx]);
-                scene.anims.push_back({ c.id, c.x, c.y, c.scale });
-            }
-        else if (std::holds_alternative<CmdBg>(cmds[idx])) {
-                frameCmds.push_back(cmds[idx]);
-            }
-        else if (std::holds_alternative<CmdFontSize>(cmds[idx])) {
-            currentFont = std::get<CmdFontSize>(cmds[idx]).size;
-            g_font_size = currentFont;             
-        }
+    while (!WindowShouldClose()) {
+            const float dt = GetFrameTime();
+            advanceAllAnims(dt); // advance animation clocks every tick
 
-        else if (std::holds_alternative<CmdFlip>(cmds[idx])) {
-              //  lastFrame = std::get<CmdFlip>(cmds[idx]).frame;
-                ++idx;
-                break;
-            }
-        else if (std::holds_alternative<CmdFontLoad>(cmds[idx])) {
-    	auto c = std::get<CmdFontLoad>(cmds[idx]);
-    	if (!g_fonts[c.id].loaded) {
-        // Resolve font path relative to the .cmdlog directory
-        std::string full = c.path;
-        if (!is_absolute_path(full)) full = join_path(baseDir, c.path);
-
-        // Loud check before we try to load
-        if (!ensure_file(full, "FONT")) {
-            // fall back so drawing still works (centering will use default metrics)
-            g_fonts[c.id].font   = GetFontDefault();
-            g_fonts[c.id].loaded = true;
-        } else {
-            Font f = LoadFontEx(full.c_str(), c.sizePx, nullptr, 0);
-            if (f.baseSize == 0) {
-                TraceLog(LOG_ERROR, "LoadFontEx failed: %s", full.c_str());
-                g_fonts[c.id].font = GetFontDefault();
-            } else {
-                TraceLog(LOG_INFO, "Loaded font[%d]: %s (size=%d)", c.id, full.c_str(), c.sizePx);
-                g_fonts[c.id].font = f;
-            }
-            g_fonts[c.id].loaded = true;
-        }
-    }
-}
-
-        else if (std::holds_alternative<CmdFontUse>(cmds[idx])) {
-            g_currentFont = std::get<CmdFontUse>(cmds[idx]).id;
-        }
-        else if (std::holds_alternative<CmdFontColor>(cmds[idx])) {
-            auto c = std::get<CmdFontColor>(cmds[idx]);
-            g_textColor = Color{(unsigned char)c.r,(unsigned char)c.g,(unsigned char)c.b,(unsigned char)c.a};
-            frameCmds.push_back(cmds[idx]);
-            //TraceLog(LOG_INFO, "FONT_COLOR = %d,%d,%d,%d", c.r, c.g, c.b, c.a);
-        }
-        else if (std::holds_alternative<CmdTextAlign>(cmds[idx])) {
-            g_textAlign = std::get<CmdTextAlign>(cmds[idx]).a;
-        }
-        else if (std::holds_alternative<CmdTextSpacing>(cmds[idx])) {
-            g_textSpacing = std::get<CmdTextSpacing>(cmds[idx]).px;
-        }
         
-    }
+            if (!cmds.empty()) {    // Build the current frame contents from cmds until the next FLIP
+            
+        // if (!cmds.empty()) {     
+                if (idx >= cmds.size()) idx = 0;    // loop playback when reaching end
 
+                UpdateTitle(S);
+
+
+                if (BtnA() && !S.tileMenu.empty()) {
+                    const std::string& path = S.tileMenu[S.selected].targetLog; // <-- local 'path'
+                    if (LoadCmdLog(path, cmds)) {
+                            ApplyUiMetaFromCmds(S, cmds);
+                        } 
+                    else {
+                            CloseWindow();
+                            return 1;
+    }
 }
 
-}
-    Color frameBg = getBgForFrame(frameCmds, {222, 218, 216,255}); // Resolve background color for this frame
-
-    BeginDrawing();
-    ClearBackground(frameBg);
-
-    BeginMode2D(cam);
-
-    // draw text command
-  for (const auto& t : scene.texts) {
-    // pick the frozen font (falls back to current/default safely)
-    int idx = (t.fontIndex >= 0) ? t.fontIndex : g_currentFont;
-    Font use =
-        (idx >= 0 && idx < (int)g_fonts.size() && g_fonts[idx].loaded)
-            ? g_fonts[idx].font
-            : GetFontDefault();
-
-    float size    = (t.size > 0) ? (float)t.size : (float)g_font_size;
-    float spacing = g_textSpacing; // keep global unless you also freeze it
-
-    Vector2 pos{ (float)t.x, (float)t.y };
-
-    // alignment with the actual font+size being drawn
-    if (g_textAlign != Align::Left) {
-        Vector2 sz = MeasureTextEx(use, t.s.c_str(), size, spacing);
-        if (g_textAlign == Align::Center) pos.x -= sz.x * 0.5f;
-        else if (g_textAlign == Align::Right) pos.x -= sz.x;
+                if (BtnB()) {
+                    HandleBackToTitle(S);
+                    const std::string path = "logs/title.cmdlog";
+                    if (LoadCmdLog(path, cmds)) {
+                        ApplyUiMetaFromCmds(S, cmds);
+                        initTitleMenu(S);  // if you want to re-layout
+                    } 
+                    else {
+                        CloseWindow();
+                        return 1;
     }
-
-    // use the frozen color (this is the key change)
-    DrawTextEx(use, t.s.c_str(), pos, size, spacing, t.col);
 }
+               
+
+                // bool didCls = false;    // tracks whether this frame started with CLS
+                //build loop
+                int currentFont = g_font_size;
+                
+                for (; idx < cmds.size(); ++idx) {
+                    if (std::holds_alternative<CmdCls>(cmds[idx])) {
+                        scene.clear();
+                        frameCmds.clear();
+                        //didCls = true;
+                    }
+                    else if (std::holds_alternative<CmdText>(cmds[idx])) {
+                        CmdText t = std::get<CmdText>(cmds[idx]);
+                        if (t.size <= 0) t.size = g_font_size;     // freeze size
+                        t.col       = g_textColor;                 // freeze color
+                        //t.fontIndex = g_currentFont;               // freeze which font
+                        scene.texts.push_back(std::move(t));
+                        frameCmds.push_back(cmds[idx]);
+                    }
+                    else if (std::holds_alternative<CmdFlip>(cmds[idx])) {
+                        //  lastFrame = std::get<CmdFlip>(cmds[idx]).frame;
+                            ++idx;
+                            break;
+                        }
+                    else if (std::holds_alternative<CmdImgLoadSheet>(cmds[idx])) {
+                            doImgLoadSheet(std::get<CmdImgLoadSheet>(cmds[idx]), baseDir);
+                        }
+                    else if (std::holds_alternative<CmdAnimSetFps>(cmds[idx])) {
+                            doAnimSetFps(std::get<CmdAnimSetFps>(cmds[idx]));
+                        }
+                    else if (std::holds_alternative<CmdAnimSetTotal>(cmds[idx])) {
+                            doAnimSetTotal(std::get<CmdAnimSetTotal>(cmds[idx]));
+                        }
+                    else if (std::holds_alternative<CmdAnimDraw>(cmds[idx])) {
+                            const auto& c = std::get<CmdAnimDraw>(cmds[idx]);
+                            scene.anims.push_back({ c.id, c.x, c.y, c.scale });
+                        }
+                    else if (std::holds_alternative<CmdBg>(cmds[idx])) {
+                            frameCmds.push_back(cmds[idx]);
+                        }
+                    else if (std::holds_alternative<CmdFontSize>(cmds[idx])) {
+                        currentFont = std::get<CmdFontSize>(cmds[idx]).size;
+                        g_font_size = currentFont;             
+                    }
+
+                    
+                    else if (std::holds_alternative<CmdFontLoad>(cmds[idx])) {
+                    auto c = std::get<CmdFontLoad>(cmds[idx]);
+                    if (!g_fonts[c.id].loaded) {
+                    // Resolve font path relative to the .cmdlog directory
+                    std::string full = c.path;
+                    if (!is_absolute_path(full)) full = join_path(baseDir, c.path);
+
+                    // Loud check before we try to load
+                    if (!ensure_file(full, "FONT")) {
+                        // fall back so drawing still works (centering will use default metrics)
+                        g_fonts[c.id].font   = GetFontDefault();
+                        g_fonts[c.id].loaded = true;
+                    } else {
+                        Font f = LoadFontEx(full.c_str(), c.sizePx, nullptr, 0);
+                        if (f.baseSize == 0) {
+                            TraceLog(LOG_ERROR, "LoadFontEx failed: %s", full.c_str());
+                            g_fonts[c.id].font = GetFontDefault();
+                        } else {
+                            TraceLog(LOG_INFO, "Loaded font[%d]: %s (size=%d)", c.id, full.c_str(), c.sizePx);
+                            g_fonts[c.id].font = f;
+                        }
+                        g_fonts[c.id].loaded = true;
+                    }
+                }
+            }
+
+                    else if (std::holds_alternative<CmdFontUse>(cmds[idx])) {
+                    // g_currentFont = std::get<CmdFontUse>(cmds[idx]).id;
+                    }
+                    else if (std::holds_alternative<CmdFontColor>(cmds[idx])) {
+                        auto c = std::get<CmdFontColor>(cmds[idx]);
+                        g_textColor = Color{(unsigned char)c.r,(unsigned char)c.g,(unsigned char)c.b,(unsigned char)c.a};
+                        frameCmds.push_back(cmds[idx]);
+                        //TraceLog(LOG_INFO, "FONT_COLOR = %d,%d,%d,%d", c.r, c.g, c.b, c.a);
+                    }
+                    else if (std::holds_alternative<CmdTextAlign>(cmds[idx])) {
+                        g_textAlign = std::get<CmdTextAlign>(cmds[idx]).a;
+                    }
+                    else if (std::holds_alternative<CmdTextSpacing>(cmds[idx])) {
+                        g_textSpacing = std::get<CmdTextSpacing>(cmds[idx]).px;
+                    }
+                
+   // }
+
+        }
+
+        }
+        Color frameBg = getBgForFrame(frameCmds, {222, 218, 216,255}); // Resolve background color for this frame
+
+        BeginDrawing();
+        ClearBackground(frameBg);
+
+        BeginMode2D(cam);
+
+        // draw text command
+    for (const auto& t : scene.texts) {
+        // pick the frozen font (falls back to current/default safely)
+    // int idx = (t.fontIndex >= 0) ? t.fontIndex : g_currentFont;
+        Font use =
+            (idx >= 0 && idx < (int)g_fonts.size() && g_fonts[idx].loaded)
+                ? g_fonts[idx].font
+                : GetFontDefault();
+
+        float size    = (t.size > 0) ? (float)t.size : (float)g_font_size;
+        float spacing = g_textSpacing; // keep global unless you also freeze it
+
+        Vector2 pos{ (float)t.x, (float)t.y };
+
+        // alignment with the actual font+size being drawn
+        if (g_textAlign != Align::Left) {
+            Vector2 sz = MeasureTextEx(use, t.s.c_str(), size, spacing);
+            if (g_textAlign == Align::Center) pos.x -= sz.x * 0.5f;
+            else if (g_textAlign == Align::Right) pos.x -= sz.x;
+        }
+
+        // use the frozen color (this is the key change)
+        DrawTextEx(use, t.s.c_str(), pos, size, spacing, t.col);
+                                        }       
 
 
-    // draw ANIM_DRAW command
-    drawAnims(scene);
+        // draw ANIM_DRAW command
+        drawAnims(scene);
+        DrawMenuOverlay(S);
+        EndMode2D();
 
-    EndMode2D();
-
-    EndDrawing();
-    }
+        EndDrawing();
+}
 
 
 g_anims.clear();
@@ -659,4 +1011,10 @@ return 0;}
 cmake -S code -B build
 cmake --build build -j
 ./build/cmdviewer logs/name.cmdfile
+*/
+
+
+
+/*
+
 */
