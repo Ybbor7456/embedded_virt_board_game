@@ -1,0 +1,68 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 176 163 170 255
+
+# FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  2
+
+
+FONT_COLOR 66 130 170 255         
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+TEXT 512 50 "Mob Gallery"
+
+
+FONT_COLOR 25 217 35 255         
+FONT_SIZE 34
+TEXT 100 130 "Green Guy"
+IMAGE_LOAD_SHEET 1 "../assets/enemies//easy/greenguy.png"  3 3
+ANIM_SET_TOTAL    1 8                      
+ANIM_SET_FPS      1 2
+ANIM_DRAW         1 50 170 3
+
+
+FONT_COLOR 217 25 217 255         
+FONT_SIZE 34
+TEXT 300 130 "Pink Blob"
+IMAGE_LOAD_SHEET 2 "../assets/enemies//easy/pink_blob.png"  2 3
+ANIM_SET_TOTAL    2 5                      
+ANIM_SET_FPS      2 2
+ANIM_DRAW         2 250 170 0.25
+
+
+FONT_COLOR 10 140 40 255         
+FONT_SIZE 34
+TEXT 500 130 "Plant"
+IMAGE_LOAD_SHEET 3 "../assets/enemies//easy/plant.png"  3 3
+ANIM_SET_TOTAL    3 9                      
+ANIM_SET_FPS      3 2
+ANIM_DRAW         3 450 170 3.25
+
+
+
+FONT_COLOR 255 0 255 255         
+FONT_SIZE 30
+TEXT 500 330 "purple nat"
+IMAGE_LOAD_SHEET 8 "../assets/enemies/easy/not_venonat.png"  2 3
+ANIM_SET_TOTAL    8 5                      
+ANIM_SET_FPS      8 2
+ANIM_DRAW         8 450 370 3.7
+
+
+FONT_COLOR 0 0 255 255         
+FONT_SIZE 34
+TEXT 700 330 "blue nat"
+IMAGE_LOAD_SHEET 9 "../assets/enemies/easy/not_shiny_venonat.png"  2 3
+ANIM_SET_TOTAL    9 5                      
+ANIM_SET_FPS      9 2
+ANIM_DRAW         9 650 370 3.7
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1
