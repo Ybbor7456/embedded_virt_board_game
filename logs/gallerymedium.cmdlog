@@ -33,8 +33,27 @@ ANIM_SET_FPS 5 2
 ANIM_DRAW 5 250 170 1.8
 
 
+FONT_COLOR 240 40 10 255
+FONT_SIZE 34
+TEXT 700 130 "Kimbro Man"
+IMAGE_LOAD_SHEET 4 "../assets/enemies/medium/tenta_man.png" 2 3
+ANIM_SET_TOTAL    4 5                      
+ANIM_SET_FPS      4 2
+ANIM_DRAW         4 650 170 0.27
+ 
+FONT_COLOR 0 0 0 255
+FONT_SIZE 34
+TEXT 900 130 "Clown"
+IMAGE_LOAD_SHEET 5 "../assets/enemies/medium/clown.png" 3 4
+ANIM_SET_TOTAL 5 11
+ANIM_SET_FPS 5 2
+ANIM_DRAW 5 840 170 1.8
+
+
+
 FONT_COLOR 255 255 255 255
 FONT_SIZE 34
+
 TEXT 495 130 "D"
 FONT_COLOR 0 0 0 255
 FONT_SIZE 34
@@ -52,14 +71,40 @@ ANIM_SET_TOTAL    10 5
 ANIM_SET_FPS      10 2
 ANIM_DRAW         10 650 170 3.7
 
+TEXT 95 330 "D"
+FONT_COLOR 0 0 0 255
+FONT_SIZE 34
+TEXT 110 330 "i"
+IMAGE_LOAD_SHEET 6 "../assets/enemies/medium/regular_di.png" 3 4
+ANIM_SET_TOTAL 6 11
+ANIM_SET_FPS 6 2
+ANIM_DRAW 6 50 370 0.27
 
 FONT_COLOR 25 217 35 255         
 FONT_SIZE 34
+TEXT 900 330 "king nat"
+IMAGE_LOAD_SHEET 10 "../assets/enemies/medium/kingnat.png"  2 3
+ANIM_SET_TOTAL    10 5                      
+ANIM_SET_FPS      10 2
+ANIM_DRAW         10 850 370 3.7
+
+
+
+FONT_COLOR 25 217 35 255         
+FONT_SIZE 34
+
 TEXT 900 130 "genie"
 IMAGE_LOAD_SHEET 11 "../assets/enemies/medium/genie.png"  5 5
 ANIM_SET_TOTAL    11 21                      
 ANIM_SET_FPS      11 2
 ANIM_DRAW         11 850 170 .85
+
+TEXT 100 130 "genie"
+IMAGE_LOAD_SHEET 11 "../assets/enemies/medium/genie.png"  5 5
+ANIM_SET_TOTAL    11 21                      
+ANIM_SET_FPS      11 2
+ANIM_DRAW         11 150 150 1
+
 
 
 

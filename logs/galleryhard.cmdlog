@@ -4,6 +4,7 @@ VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
 CLS
 BG 176 163 170 255
 
+
 # FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
 FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
 FONT_USE  2
@@ -30,6 +31,16 @@ IMAGE_LOAD_SHEET 2 "../assets/enemies/hard/souls.png" 2 3
 ANIM_SET_TOTAL 2 6
 ANIM_SET_FPS 2 1
 ANIM_DRAW 2 250 170 0.11
+
+
+FONT_COLOR 220 10 10 255
+FONT_SIZE 34
+TEXT 300 330 "Devil"
+IMAGE_LOAD_SHEET 7 "../assets/enemies/hard/codexgigas_devil.png" 3 3
+ANIM_SET_TOTAL 7 8
+ANIM_SET_FPS 7 2
+ANIM_DRAW 7 240 370 1.90
+
 
 
 FONT_USE 1
