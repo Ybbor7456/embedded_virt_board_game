@@ -5,6 +5,34 @@ CLS
 BG 176 163 170 255
 
 
+# FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  2
+
+FONT_COLOR 66 130 170 255         
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+TEXT 512 50 "Hard LvL Mob Gallery"
+
+
+
+FONT_COLOR 220 10 10 255
+FONT_SIZE 34
+TEXT 100 130 "Devil"
+IMAGE_LOAD_SHEET 1 "../assets/enemies/hard/codexgigas_devil.png" 3 3
+ANIM_SET_TOTAL 1 8
+ANIM_SET_FPS 1 2
+ANIM_DRAW 1 50 170 1.90
+
+FONT_COLOR 220 0 220 255
+FONT_SIZE 34
+TEXT 300 130 "Souls"
+IMAGE_LOAD_SHEET 2 "../assets/enemies/hard/souls.png" 2 3
+ANIM_SET_TOTAL 2 6
+ANIM_SET_FPS 2 1
+ANIM_DRAW 2 250 170 0.11
+
+
 FONT_COLOR 220 10 10 255
 FONT_SIZE 34
 TEXT 300 330 "Devil"
@@ -12,6 +40,7 @@ IMAGE_LOAD_SHEET 7 "../assets/enemies/hard/codexgigas_devil.png" 3 3
 ANIM_SET_TOTAL 7 8
 ANIM_SET_FPS 7 2
 ANIM_DRAW 7 240 370 1.90
+
 
 
 FONT_USE 1

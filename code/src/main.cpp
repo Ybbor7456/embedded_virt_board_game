@@ -10,10 +10,10 @@
 #include <variant>       // type-safe tagged union for commands
 #include <vector>
 #include <unordered_map> // associative container (key→value) for animations by id
-#include <iomanip>
+#include <iomanip>          // quoted()
 #include <string>
-#include <vector>
-#include <functional> //
+#include <vector>       
+#include <functional> 
 #include <cctype>
 
 
@@ -113,18 +113,24 @@ struct MenuItem {
     
 };
 
-struct AppState{Screen screen = Screen::Title; 
+struct AppState{
+    Screen screen = Screen::Title; 
     int selected = 0;
-    std::vector<MenuItem> tileMenu;
+    std::vector<MenuItem> tileMenu;         //
     Color focusColor      = YELLOW;         // outline color for selected item
     float focusThickness  = 3.0f;           // outline thickness
     Color focusShadow    = CLITERAL(Color){  0,   0,   0,  80};
     Color idleOutline    = CLITERAL(Color){255, 255, 255, 48};
  };
-struct CmdHitbox { std::string id; Rectangle r; };           
-struct CmdTarget { std::string id; std::string path; }; 
+struct CmdHitbox { 
+    std::string id;
+    Rectangle r; };           
+struct CmdTarget { 
+    std::string id;
+     std::string path; }; 
 
 
+//default values/declarations/definitions
 static std::unordered_map<int, AnimSheet> g_anims; // id → animation
 static int g_font_size = 20; 
 static std::unordered_map<int, FontRes> g_fonts;
@@ -161,8 +167,7 @@ static inline std::string trim(const std::string& s) {
 
 
 static inline std::string lower_copy(std::string s) {
-    std::transform(s.begin(), s.end(), s.begin(),
-                   [](unsigned char c){ return (char)std::tolower(c); });
+    std::transform(s.begin(), s.end(), s.begin(), [](unsigned char c){ return (char)std::tolower(c); });
     return s;
 }
 
@@ -179,7 +184,7 @@ static MenuItem* findMenuItem(AppState& S, const std::string& key) {
 
     // 2) fallback to label
     for (auto& it : S.tileMenu)
-        if (normalize_key(it.label) == k) return &it;
+        if (!it.label.empty() && normalize_key(it.label) == k) return &it;
 
     return nullptr;
 }
@@ -217,7 +222,6 @@ static inline bool ensure_file(const std::string& full, const char* what) {
 ██▄ █░▀█ █▄▀   █▄█ ░█░ █ █▄▄ █ ░█░ █ ██▄ ▄█
 */ 
 
-
 /*
 █▀█ ▄▀█ █▀█ █▀ █▀▀ █▀█ █▀
 █▀▀ █▀█ █▀▄ ▄█ ██▄ █▀▄ ▄█
@@ -236,6 +240,7 @@ static std::optional<CmdTextSpacing>  parseTextSpacing(const std::string& line);
 static bool LoadCmdLog(const std::string& path, std::vector<Command>& out);
 
 // 
+
 static std::optional<CmdText> parseText(const std::string& line) {
     std::istringstream iss(line);
     std::string op; int x, y;
@@ -372,22 +377,34 @@ static std::optional<CmdFontLoad> parseFontLoad(const std::string& ln){
 }
 
 static std::optional<CmdFontUse> parseFontUse(const std::string& ln){
-    std::istringstream is(ln); std::string op; int id; if(!(is>>op>>id)) return std::nullopt; return CmdFontUse{id};
+    std::istringstream is(ln);
+    std::string op;
+    int id; 
+    if(!(is>>op>>id)) return std::nullopt; 
+    return CmdFontUse{id};
 }
 
 static std::optional<CmdFontColor> parseFontColor(const std::string& ln){
-    std::istringstream is(ln); std::string op; int r,g,b,a; if(!(is>>op>>r>>g>>b>>a)) return std::nullopt;
+    std::istringstream is(ln); 
+    std::string op; 
+    int r,g,b,a; 
+    if(!(is>>op>>r>>g>>b>>a)){ return std::nullopt;}
     return CmdFontColor{(unsigned char)r,(unsigned char)g,(unsigned char)b,(unsigned char)a};
 }
 
 static std::optional<CmdTextAlign> parseTextAlign(const std::string& ln){
-    std::istringstream is(ln); std::string op, val; if(!(is>>op>>val)) return std::nullopt;
+    std::istringstream is(ln); std::string op, val; 
+    if(!(is>>op>>val)) return std::nullopt;
     Align a = (val=="CENTER"?Align::Center: val=="RIGHT"?Align::Right: Align::Left);
     return CmdTextAlign{a};
 }
 
 static std::optional<CmdTextSpacing> parseTextSpacing(const std::string& ln){
-    std::istringstream is(ln); std::string op; float px; if(!(is>>op>>px)) return std::nullopt; return CmdTextSpacing{px};
+    std::istringstream is(ln); 
+    std::string op; 
+    float px; 
+    if(!(is>>op>>px)) return std::nullopt;
+    return CmdTextSpacing{px};
 }
 
 static inline std::string trim_and_strip_comment(std::string s) {
@@ -554,7 +571,7 @@ static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir)
     // If already loaded, don't reset frame
     auto it = g_anims.find(c.id);
     if (it != g_anims.end() && it->second.valid()) { //prevents unneeded load frames
-       
+    
         return;
     }
     

@@ -93,7 +93,7 @@ ANIM_DRAW         8 450 370 3.7
 FONT_COLOR 0 0 255 255         
 FONT_SIZE 34
 TEXT 700 330 "blue nat"
-IMAGE_LOAD_SHEET 9 "../assets/enemies/easy/not_shiny_venonat1.png"  2 3
+IMAGE_LOAD_SHEET 9 "../assets/enemies/easy/not_shiny_venonat.png"  2 3
 ANIM_SET_TOTAL    9 5                      
 ANIM_SET_FPS      9 2
 ANIM_DRAW         9 650 370 3.7
