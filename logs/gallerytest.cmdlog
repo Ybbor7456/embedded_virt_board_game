@@ -1,0 +1,33 @@
+# used to test moving HITBOX and TARGET commands
+
+HELLO V1 GAME "Mob Gallery" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 176 163 170 255
+
+# FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  2
+
+
+FONT_COLOR 66 130 170 255         
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+TEXT 512 50 "Test Mob Gallery"
+
+
+HITBOX green_guy  50 170 100 100
+TARGET green_guy  "logs/assets/green_guy.cmdlog"
+TEXT 100 130 "Green Guy"
+
+
+
+IMAGE_LOAD_SHEET 1 "../assets/enemies/easy/greenguy.png"  3 3
+ANIM_SET_TOTAL    1 8                      
+ANIM_SET_FPS      1 2
+ANIM_DRAW         1 50 170 3.125
+
+
+
+FLIP 1

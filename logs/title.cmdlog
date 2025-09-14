@@ -20,16 +20,20 @@ FONT_COLOR 0 0 0 255       # black
 FONT_SIZE 36
 TEXT_ALIGN CENTER
 
-HITBOX start 512 260 50 50
+HITBOX start 512 250 50 50
 TARGET start  "logs/start.cmdlog"
 TEXT 512 260 "Start"
+
+# HITBOX start2 712 350 80 80
+# TARGET start2  "logs/start2.cmdlog"
+# TEXT 712 360 "Start2"
 
 HITBOX rules  512 360 50 50
 TARGET rules  "logs/rules.cmdlog"
 TEXT 512 360 "Rules"
 
 HITBOX description  420 445 280 56
-TARGET Description  "logs/description.cmdlog"
+TARGET description  "logs/description.cmdlog"
 TEXT 512 460 "Description"
 
 IMAGE_LOAD_SHEET 1 "../assets/g_e_ss.png" 5 6

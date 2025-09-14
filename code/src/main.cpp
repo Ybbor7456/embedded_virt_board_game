@@ -571,12 +571,12 @@ static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir)
     // If already loaded, don't reset frame
     auto it = g_anims.find(c.id);
     if (it != g_anims.end() && it->second.valid()) { //prevents unneeded load frames
-    
+                        // if not at end , and doesnt return id = 0
         return;
     }
     
     if (!ensure_file(full, "TEXTURE")) {
-        return;  // leave animation missing; draw will just skip
+        return;  // leave animation missing; draw will just skip, loads TraceLog() for "TEXTURE"
     }
     
     // load texture 
@@ -586,7 +586,7 @@ static void doImgLoadSheet(const CmdImgLoadSheet& c, const std::string& baseDir)
         TraceLog(LOG_ERROR, "LoadTexture failed: %s", full.c_str());
         return;
     }
-    SetTextureFilter(anim.tex, TEXTURE_FILTER_POINT);
+    SetTextureFilter(anim.tex, TEXTURE_FILTER_POINT); // if ID is not 0
 
     anim.cols   = std::max(1, c.cols);
     anim.rows   = std::max(1, c.rows);
@@ -641,8 +641,9 @@ static Color getBgForFrame(const std::vector<Command>& frameCmds, Color fallback
     Color bg = fallback;
     for (const auto& c : frameCmds) {
         if (const auto* p = std::get_if<CmdBg>(&c)) {
-            bg = Color{ (unsigned char)p->r, (unsigned char)p->g,
-                        (unsigned char)p->b, (unsigned char)p->a };
+            bg = Color{ 
+            (unsigned char)p->r, (unsigned char)p->g,
+            (unsigned char)p->b, (unsigned char)p->a };
         }
     }
     return bg;
@@ -666,33 +667,32 @@ static inline void DrawFocusBox(const Rectangle& r, Color outline, float thickne
     DrawRectangleLinesEx(r, thickness, outline);
 }
 
-
-/* Build the Title menu: labels, target logs, and hit-rects */
+/* Builds the Title menu: labels, target logs, and hit-rects */
 void initTitleMenu(AppState& S) {
-    //AppState S;
+    
     S.screen   = Screen::Title;
     
-    // --- Define your 3 options here ---
+   
     // Adjust targetLog filenames to match repo (e.g., "logs/title.cmdlog")
     S.tileMenu.clear();
-    S.tileMenu.push_back({ "start", "Start",        {0,0,0,0}, "logs/start.cmdlog" });
-    S.tileMenu.push_back({ "rules", "Rules",        {0,0,0,0}, "logs/rules.cmdlog" });
-    S.tileMenu.push_back({ "description", "Description", {0,0,0,0}, "logs/description.cmdlog" });
-    S.selected = 0;
-    // --- Layout: center the 3 buttons in the logical space ---
+    S.tileMenu.push_back({ "start", "Start",        {0,0,0,0}, "logs/start.cmdlog" });  //remove for data driven approach
+    S.tileMenu.push_back({ "rules", "Rules",        {0,0,0,0}, "logs/rules.cmdlog" }); // remove 
+    S.tileMenu.push_back({ "description", "Description", {0,0,0,0}, "logs/description.cmdlog" }); // remove 
+    S.selected = 0; //default value
+ 
     const int logicalW = 1024;
     const int logicalH = 576;
 
-    // Use the current font size for a sensible box. (g_font_size is already global.)
-    const int   padX       = 24;
-    const int   padY       = 12;
+    //current font size for a sensible box, font size is already global 
+    const int   padX       = 24;    // x padding
+    const int   padY       = 12;    // y padding
     const int   spacingY   = 56;   // vertical space between items
     const float fontPx     = (float)g_font_size;
-    Font        font       = GetFontDefault();   // safe fallback for measuring
+    Font        font       = GetFontDefault();   // raylib method to return built-in font
 
     // First item y so that the three items are vertically centered
-    const int totalH = (int)(3 * (fontPx + padY * 2) + 2 * spacingY);
-    int y = (logicalH - totalH) / 2;
+    const int totalH = (int)(3 * (fontPx + padY * 2) + 2 * spacingY);   // estimates total list height, default hitbox hovers
+    int y = (logicalH - totalH) / 2;                                    // replace once data driven approach is taken
 
     for (auto& it : S.tileMenu) {
         // Measure label and make a padded rectangle
@@ -714,23 +714,17 @@ void UpdateTitle(AppState& S) {
     if (BtnUp())    { S.selected = (S.selected - 1 + n) % n; }
     if (BtnDown())  { S.selected = (S.selected + 1) % n; }
 
-    // Optional: allow left/right as synonyms for up/down
     if (BtnLeft())  { S.selected = (S.selected - 1 + n) % n; }
     if (BtnRight()) { S.selected = (S.selected + 1) % n; }
 
-    // NOTE: Do NOT call LoadCmdLog here (cmds is in main).
-    // In your main loop, when BtnA() is pressed, read:
-    //   const std::string& path = S.tileMenu[S.selected].targetLog;
-    //   LoadCmdLog(path, cmds);
+
 }
 
 /* Reset state when you go "back" to title (B button). */
 void HandleBackToTitle(AppState& S) {
     S.screen   = Screen::Title;
     S.selected = 0;
-    // If you want to re-center/recompute rects, re-init:
-    // initTitleMenu(S);
-    // NOTE: Do NOT load the file here; do it in main where 'cmds' exists.
+
 }
 
 /* Draws the overlay (the focus ring) over the current menu item */
@@ -748,7 +742,6 @@ void DrawMenuOverlay(const AppState& S) {
     // Emphasize the focused one
     DrawFocusBox(S.tileMenu[S.selected].rect, S.focusColor, S.focusThickness, S.focusShadow);
 }
-
 
 
 static void ApplyUiMetaFromCmds(AppState& S, const std::vector<Command>& cmds) {
