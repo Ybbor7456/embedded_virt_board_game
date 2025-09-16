@@ -12,7 +12,7 @@ FONT_USE  2
 
 
 FONT_COLOR 66 130 170 255         
-FONT_SIZE 72
+FONT_SIZE 30
 TEXT_ALIGN CENTER
 TEXT 512 50 "Test Mob Gallery"
 
@@ -20,14 +20,19 @@ TEXT 512 50 "Test Mob Gallery"
 HITBOX green_guy  50 170 100 100
 TARGET green_guy  "logs/assets/green_guy.cmdlog"
 TEXT 100 130 "Green Guy"
-
-
-
 IMAGE_LOAD_SHEET 1 "../assets/enemies/easy/greenguy.png"  3 3
 ANIM_SET_TOTAL    1 8                      
 ANIM_SET_FPS      1 2
 ANIM_DRAW         1 50 170 3.125
 
+
+HITBOX pink_blob  250 170 100 100
+TARGET pink_blob  "logs/assets/pink_blob.cmdlog"
+TEXT 300 130 "pink_blob"
+IMAGE_LOAD_SHEET 2 "../assets/enemies/easy/pink_blob.png"  2 3
+ANIM_SET_TOTAL    2 5                      
+ANIM_SET_FPS      2 2
+ANIM_DRAW         2 250 170 0.25
 
 
 FLIP 1
