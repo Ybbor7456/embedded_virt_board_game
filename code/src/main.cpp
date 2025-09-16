@@ -15,6 +15,7 @@
 #include <vector>       
 #include <functional> 
 #include <cctype>
+#include <cmath>
 
 
 enum class Align { Left, Center, Right }; //allignment
@@ -121,6 +122,8 @@ struct AppState{
     float focusThickness  = 3.0f;           // outline thickness
     Color focusShadow    = CLITERAL(Color){  0,   0,   0,  80};
     Color idleOutline    = CLITERAL(Color){255, 255, 255, 48};
+    std::string currentPath;
+    std::vector<std::string> navStack;
  };
 struct CmdHitbox { 
     std::string id;
@@ -707,17 +710,46 @@ void initTitleMenu(AppState& S) {
 }
 
 // Handle up/down selection at the title screen 
-void UpdateTitle(AppState& S) {
+static void UpdateMenu(AppState& S) {
     if (S.tileMenu.empty()) return;
+    const int cur = S.selected;
 
-    const int n = (int)S.tileMenu.size();
-    if (BtnUp())    { S.selected = (S.selected - 1 + n) % n; }
-    if (BtnDown())  { S.selected = (S.selected + 1) % n; }
+    auto center = [](const Rectangle& r) -> Vector2 {
+        return { r.x + r.width * 0.5f, r.y + r.height * 0.5f };
+    };
 
-    if (BtnLeft())  { S.selected = (S.selected - 1 + n) % n; }
-    if (BtnRight()) { S.selected = (S.selected + 1) % n; }
+    const Vector2 c0 = center(S.tileMenu[cur].rect);
 
+    auto choose = [&](Vector2 dir) {
+        int best = -1;
+        float bestScore = 1e9f;
 
+        for (int i = 0; i < (int)S.tileMenu.size(); ++i) {
+            if (i == cur) continue;
+
+            Vector2 c = center(S.tileMenu[i].rect);
+            Vector2 v{ c.x - c0.x, c.y - c0.y };
+            float len = sqrtf(v.x*v.x + v.y*v.y);
+            if (len < 1e-3f) continue;
+
+            Vector2 vn{ v.x / len, v.y / len };
+            float d = vn.x * dir.x + vn.y * dir.y;  
+
+            if (d <= 0.2f) continue;                
+
+            float angPenalty = (1.0f - d) * 1000.0f; 
+            float dist       = len;                  
+            float score      = angPenalty + dist;
+
+            if (score < bestScore) { bestScore = score; best = i; }
+        }
+        if (best >= 0) S.selected = best;
+    };
+
+    if (BtnRight()) choose({ 1, 0 });
+    if (BtnLeft())  choose({-1, 0 });
+    if (BtnDown())  choose({ 0, 1 });
+    if (BtnUp())    choose({ 0,-1 });
 }
 
 /* Reset state when you go "back" to title (B button). */
@@ -744,36 +776,60 @@ void DrawMenuOverlay(const AppState& S) {
 }
 
 
+
 static void ApplyUiMetaFromCmds(AppState& S, const std::vector<Command>& cmds) {
     auto findItem = [&](const std::string& key) -> MenuItem* {
         const std::string k = normalize_key(key);
 
-        // 1) by id (preferred)
+        // 1) by id
         for (auto& it : S.tileMenu)
             if (!it.id.empty() && normalize_key(it.id) == k) return &it;
 
-        // 2) fallback by label text (e.g., "Start", "Rules", "Description")
+        // 2) fallback by label text 
         for (auto& it : S.tileMenu)
             if (normalize_key(it.label) == k) return &it;
 
         return nullptr;
     };
 
-    int nHit = 0, nTgt = 0;
 
-    for (const auto& cmd : cmds) {
-        if (auto p = std::get_if<CmdHitbox>(&cmd)) {
-            if (auto* it = findItem(p->id)) { it->rect = p->r; ++nHit; }
-            else TraceLog(LOG_WARNING, "HITBOX key '%s' did not match any menu item", p->id.c_str());
-        } else if (auto p2 = std::get_if<CmdTarget>(&cmd)) {
-            if (auto* it = findItem(p2->id)) { it->targetLog = p2->path; ++nTgt; }
-            else TraceLog(LOG_WARNING, "TARGET key '%s' did not match any menu item", p2->id.c_str());
+    for (const auto& c : cmds) {
+        if (auto hb = std::get_if<CmdHitbox>(&c)) {
+            auto* it = findItem(hb->id);
+            if (!it) {
+                S.tileMenu.push_back({ hb->id, hb->id, hb->r, "" });
+            } else {
+                it->rect = hb->r;
+            }
+        } else if (auto tg = std::get_if<CmdTarget>(&c)) {
+            auto* it = findItem(tg->id);
+            if (!it) {
+                S.tileMenu.push_back({ tg->id, tg->id, {0,0,0,0}, tg->path });
+            } else {
+                it->targetLog = tg->path;
+            }
         }
     }
-
-    TraceLog(LOG_INFO, "Applied %d HITBOX and %d TARGET entries", nHit, nTgt);
 }
 
+static bool LoadScreen(AppState& S, const std::string& path, std::vector<Command>& cmds, bool pushToStack = true) {
+    if (!LoadCmdLog(path, cmds)) return false;
+    S.tileMenu.clear();
+    ApplyUiMetaFromCmds(S, cmds);  
+    S.currentPath = path;
+    S.selected    = 0;
+
+    if (pushToStack) {
+        if (S.navStack.empty() || S.navStack.back() != path) S.navStack.push_back(path);
+    }
+    return true;
+}
+
+static bool GoBack(AppState& S, std::vector<Command>& cmds, const std::string& titlePath = "logs/title.cmdlog") {
+    if (!S.navStack.empty()) S.navStack.pop_back();
+    const std::string* prev = S.navStack.empty() ? &titlePath : &S.navStack.back();
+    return LoadScreen(S, *prev, cmds, false);
+}
 
 /*
 █▀▄▀█ ▄▀█ █ █▄░█
@@ -814,7 +870,7 @@ int main(int argc, char** argv) {
         return 1;        // bail
          }
     
-    
+    if (!LoadScreen(S, filePath, cmds)) { CloseWindow(); return 1; } 
 
     const std::string baseDir = dirname_of(filePath); // for resolving relative asset paths
 
@@ -830,38 +886,25 @@ int main(int argc, char** argv) {
             const float dt = GetFrameTime();
             advanceAllAnims(dt); // advance animation clocks every tick
 
-        
+            UpdateMenu(S);
+
             if (!cmds.empty()) {    // Build the current frame contents from cmds until the next FLIP
             
         // if (!cmds.empty()) {     
                 if (idx >= cmds.size()) idx = 0;    // loop playback when reaching end
 
-                UpdateTitle(S);
+                
 
 
-                if (BtnA() && !S.tileMenu.empty()) {
-                    const std::string& path = S.tileMenu[S.selected].targetLog; // <-- local 'path'
-                    if (LoadCmdLog(path, cmds)) {
-                            ApplyUiMetaFromCmds(S, cmds);
-                        } 
-                    else {
-                            CloseWindow();
-                            return 1;
-    }
-}
+                if (!S.tileMenu.empty() && BtnA()) {
+        const std::string& next = S.tileMenu[S.selected].targetLog;
+        if (!LoadScreen(S, next, cmds)) { CloseWindow(); return 1; }
+        
+        }
 
                 if (BtnB()) {
-                    HandleBackToTitle(S);
-                    const std::string path = "logs/title.cmdlog";
-                    if (LoadCmdLog(path, cmds)) {
-                        ApplyUiMetaFromCmds(S, cmds);
-                        initTitleMenu(S);  // if you want to re-layout
-                    } 
-                    else {
-                        CloseWindow();
-                        return 1;
+                    if (!GoBack(S, cmds)) { CloseWindow(); return 1; }
     }
-}
                
 
                 // bool didCls = false;    // tracks whether this frame started with CLS
@@ -991,7 +1034,8 @@ int main(int argc, char** argv) {
 
         // draw ANIM_DRAW command
         drawAnims(scene);
-        DrawMenuOverlay(S);
+        
+        if (!S.tileMenu.empty()) DrawMenuOverlay(S);
         EndMode2D();
 
         EndDrawing();
