@@ -1,0 +1,35 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+
+CLS
+BG 2 79 110 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 0 0 255 255       
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "Blue Nat"
+
+FONT_SIZE 30
+
+TEXT 512 150 "This isn't Shiny Venonat"
+TEXT 512 200 "Attack: 3"
+TEXT 512 250 "Defense: 4"
+TEXT 512 300 "Prefered Method of Attack: Melee and Magic"
+
+
+IMAGE_LOAD_SHEET 5 "../../assets/enemies/easy/not_venonat.png"  2 3
+ANIM_SET_TOTAL    5 5                     
+ANIM_SET_FPS      5 2
+ANIM_DRAW         5 420 350 7
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1

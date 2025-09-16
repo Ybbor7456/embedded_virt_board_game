@@ -40,10 +40,6 @@ TEXT 512 350 "Do not fail either of your entities."
 # ANIM_SET_FPS 1 2
 # ANIM_DRAW 1 100 100 3.5
 
-IMAGE_LOAD_SHEET 1 "../assets/enemies/medium/clown.png" 3 4
-ANIM_SET_TOTAL 1 8
-ANIM_SET_FPS 1 2
-ANIM_DRAW 1 100 100 5
 
 
 FONT_USE 2

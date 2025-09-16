@@ -16,7 +16,8 @@ TEXT_ALIGN CENTER
 TEXT 512 50 "Easy LvL Mob Gallery"
 
 
-
+HITBOX greenguy  50 170 100 100
+TARGET greenguy  "logs/enemylogs/greenguy.cmdlog"
 FONT_COLOR 25 217 35 255         
 FONT_SIZE 34
 TEXT 100 130 "Green Guy"
@@ -28,7 +29,8 @@ ANIM_DRAW         1 50 170 3.25
 
 
 
-
+HITBOX pink_blob  250 170 100 100
+TARGET pink_blob  "logs/enemylogs/pink_blob.cmdlog"
 FONT_COLOR 217 25 217 255         
 FONT_SIZE 34
 TEXT 300 130 "Pink Blob"
@@ -36,9 +38,11 @@ TEXT 300 130 "Pink Blob"
 IMAGE_LOAD_SHEET 2 "../assets/enemies/easy/pink_blob.png"  2 3
 ANIM_SET_TOTAL    2 5                      
 ANIM_SET_FPS      2 2
-ANIM_DRAW         2 250 170 0.25
+ANIM_DRAW         2 250 170 0.235
 
 
+HITBOX plant  450 170 100 100
+TARGET plant  "logs/enemylogs/plant.cmdlog"
 FONT_COLOR 10 140 40 255         
 FONT_SIZE 34
 TEXT 500 130 "Plant"
@@ -46,38 +50,44 @@ TEXT 500 130 "Plant"
 IMAGE_LOAD_SHEET 3 "../assets/enemies/easy/plant.png"  3 3
 ANIM_SET_TOTAL    3 9                      
 ANIM_SET_FPS      3 2
-ANIM_DRAW         3 450 170 3.3
+ANIM_DRAW         3 450 170 3.2
 
 
 
-FONT_COLOR 255 0 255 255         
+HITBOX not_venonat  650 170 100 100
+TARGET not_venonat  "logs/enemylogs/not_venonat.cmdlog"
+FONT_COLOR 160 10 160 255         
 FONT_SIZE 30
-TEXT 700 130 "purple nat"
+TEXT 700 130 "Purple Nat"
 # 64x96
-IMAGE_LOAD_SHEET 8 "../assets/enemies/easy/not_venonat.png"  2 3
-ANIM_SET_TOTAL    8 5                      
-ANIM_SET_FPS      8 2
-ANIM_DRAW         8 650 170 3.3
+IMAGE_LOAD_SHEET 4 "../assets/enemies/easy/not_venonat.png"  2 3
+ANIM_SET_TOTAL    4 5                      
+ANIM_SET_FPS      4 2
+ANIM_DRAW         4 650 170 3.2
 
 
+HITBOX not_shiny_venonat  850 170 100 100
+TARGET not_shiny_venonat  "logs/enemylogs/not_shiny_venonat.cmdlog"
 FONT_COLOR 0 0 255 255         
 FONT_SIZE 34
 # 64x96
-TEXT 900 130 "blue nat"
-IMAGE_LOAD_SHEET 9 "../assets/enemies/easy/not_shiny_venonat.png"  2 3
-ANIM_SET_TOTAL    9 5                      
-ANIM_SET_FPS      9 2
-ANIM_DRAW         9 850 170 3.25
+TEXT 900 130 "Blue Nat"
+IMAGE_LOAD_SHEET 5 "../assets/enemies/easy/not_shiny_venonat.png"  2 3
+ANIM_SET_TOTAL    5 5                      
+ANIM_SET_FPS      5 2
+ANIM_DRAW         5 850 170 3.2
 
 
+HITBOX eviltomato  50 370 100 100
+TARGET eviltomato  "logs/enemylogs/eviltomato.cmdlog"
 FONT_COLOR 255 70 10 255         
 FONT_SIZE 34
-TEXT 100 330 "evil tomato"
+TEXT 100 330 "Evil Tomato"
 # 1950x1950
-IMAGE_LOAD_SHEET 10 "../assets/enemies/easy/eviltomato.png"  2 2
-ANIM_SET_TOTAL    10 3                     
-ANIM_SET_FPS      10 2
-ANIM_DRAW         10 50 370 .12
+IMAGE_LOAD_SHEET 6 "../assets/enemies/easy/eviltomato.png"  2 2
+ANIM_SET_TOTAL    6 3                     
+ANIM_SET_FPS      6 2
+ANIM_DRAW         6 50 370 .10
 
 
 FONT_USE 1

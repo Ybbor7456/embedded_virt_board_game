@@ -14,27 +14,44 @@ FONT_USE  2
 FONT_COLOR 66 130 150 255         
 FONT_SIZE 72
 TEXT_ALIGN CENTER
-TEXT 512 140 "Guardians" 
+TEXT 512 30 "Guardians" 
 
 FONT_COLOR 0 0 0 255       # black
 FONT_SIZE 36
 TEXT_ALIGN CENTER
 
-HITBOX start 512 250 50 50
+HITBOX start 460 140 100 50
 TARGET start  "logs/start.cmdlog"
-TEXT 512 260 "Start"
+TEXT 512 150 "Start"
 
-# HITBOX start2 712 350 80 80
+# HITBOX start2 712 320 100 199
 # TARGET start2  "logs/start2.cmdlog"
-# TEXT 712 360 "Start2"
+# TEXT 712 330 "Start2"
 
-HITBOX rules  512 360 50 50
+HITBOX rules  460 200 100 50
 TARGET rules  "logs/rules.cmdlog"
-TEXT 512 360 "Rules"
+TEXT 512 205 "Rules"
 
-HITBOX description  420 445 280 56
+HITBOX description  410 255 200 40
 TARGET description  "logs/description.cmdlog"
-TEXT 512 460 "Description"
+TEXT 512 255 "Description"
+
+
+FONT_COLOR 0 0 0 255
+FONT_SIZE 30
+
+HITBOX easy 112 320 200 40
+TARGET easy "logs/galleryeasy.cmdlog"
+TEXT 212 320 "Gallery Easy"
+
+HITBOX medium 412 320 200 40
+TARGET medium "logs/gallerymedium.cmdlog"
+TEXT 512 320 "Gallery Medium"
+
+HITBOX hard 712 320 200 40
+TARGET hard "logs/galleryard.cmdlog"
+TEXT 812 320 "Gallery Hard"
+
 
 IMAGE_LOAD_SHEET 1 "../assets/g_e_ss.png" 5 6
 ANIM_SET_TOTAL    1 26                      
@@ -45,7 +62,7 @@ IMAGE_LOAD_SHEET 2 "../assets/b_e_ss.png" 5 6
 ANIM_SET_TOTAL    2 26
 ANIM_SET_FPS      2 2
 # top-right: x = 1024 - (frameW * scale) - margin
-# if your frame is 416px wide (2080/5), at 0.5 scale that’s 208px; 1024-208-16 = 800
+
 ANIM_DRAW         2 864 0 0.4
 
 IMAGE_LOAD_SHEET 3 "../assets/octopus_left.png" 5 6
