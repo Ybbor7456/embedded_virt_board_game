@@ -22,10 +22,10 @@ TEXT 512 250 "Defense: 2"
 TEXT 512 300 "Prefered Method of Attack: Melee"
 
 
-IMAGE_LOAD_SHEET 3 "../../assets/enemies/easy/plant.png"  3 3
-ANIM_SET_TOTAL    3 9                     
-ANIM_SET_FPS      3 2
-ANIM_DRAW         3 420 370 7
+IMAGE_LOAD_SHEET 7 "../../assets/enemies/easy/plant.png"  3 3
+ANIM_SET_TOTAL    7 9                     
+ANIM_SET_FPS      7 2
+ANIM_DRAW         7 420 370 7
 
 
 FONT_USE 1

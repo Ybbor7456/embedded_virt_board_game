@@ -22,10 +22,10 @@ TEXT 512 250 "Defense:"
 TEXT 512 300 "Prefered Method of Attack: None"
 
 
-IMAGE_LOAD_SHEET 1 "../../assets/enemies/easy/greenguy.png"  3 3
-ANIM_SET_TOTAL    1 8                      
-ANIM_SET_FPS      1 2
-ANIM_DRAW         1 420 350 5.5
+IMAGE_LOAD_SHEET 5 "../../assets/enemies/easy/greenguy.png"  3 3
+ANIM_SET_TOTAL    5 8                      
+ANIM_SET_FPS      5 2
+ANIM_DRAW         5 420 350 5.5
 
 
 FONT_USE 1

@@ -22,10 +22,10 @@ TEXT 512 250 "Defense: 2"
 TEXT 512 300 "Prefered Method of Attack: Melee"
 
 
-IMAGE_LOAD_SHEET 6 "../../assets/enemies/easy/eviltomato.png"  2 3
-ANIM_SET_TOTAL    6 3                     
-ANIM_SET_FPS      6 2
-ANIM_DRAW         6 400 355 0.23
+IMAGE_LOAD_SHEET 10 "../../assets/enemies/easy/eviltomato.png"  2 3
+ANIM_SET_TOTAL    10 3                     
+ANIM_SET_FPS      10 2
+ANIM_DRAW         10 400 355 0.23
 
 
 FONT_USE 1

@@ -20,10 +20,10 @@ TARGET devil "logs/assets/devil.cmdlog"
 FONT_COLOR 220 10 10 255
 FONT_SIZE 34
 TEXT 100 130 "Devil"
-IMAGE_LOAD_SHEET 1 "../assets/enemies/hard/codexgigas_devil.png" 3 3
-ANIM_SET_TOTAL 1 8
-ANIM_SET_FPS 1 2
-ANIM_DRAW 1 50 170 1.5
+IMAGE_LOAD_SHEET 31 "../assets/enemies/hard/codexgigas_devil.png" 3 3
+ANIM_SET_TOTAL 31 8
+ANIM_SET_FPS 31 2
+ANIM_DRAW 31 50 170 1.5
 
 
 HITBOX souls 250 170 100 100
@@ -31,10 +31,10 @@ TARGET souls "logs/assets/souls.cmdlog"
 FONT_COLOR 220 0 220 255
 FONT_SIZE 34
 TEXT 300 130 "Souls"
-IMAGE_LOAD_SHEET 2 "../assets/enemies/hard/souls.png" 2 3
-ANIM_SET_TOTAL 2 6
-ANIM_SET_FPS 2 1
-ANIM_DRAW 2 250 170 0.085
+IMAGE_LOAD_SHEET 32 "../assets/enemies/hard/souls.png" 2 3
+ANIM_SET_TOTAL 32 6
+ANIM_SET_FPS 32 1
+ANIM_DRAW 32 250 170 0.085
 
 
 HITBOX vamp 450 170 100 100
@@ -42,10 +42,22 @@ TARGET vamp "logs/assets/vamp.cmdlog"
 FONT_COLOR 255 15 0 255
 FONT_SIZE 34
 TEXT 500 130 "Vamp"
-IMAGE_LOAD_SHEET 3 "../assets/enemies/hard/vamp.png" 5 5
-ANIM_SET_TOTAL 3 25
-ANIM_SET_FPS 3 2
-ANIM_DRAW 3 450 170 1.55
+IMAGE_LOAD_SHEET 33 "../assets/enemies/hard/vamp.png" 5 5
+ANIM_SET_TOTAL 33 25
+ANIM_SET_FPS 33 2
+ANIM_DRAW 33 450 170 1.55
+
+
+HITBOX ward 650 170 100 100
+TARGET ward "logs/assets/ward.cmdlog"
+FONT_COLOR 9 0 170 255
+FONT_SIZE 34
+TEXT 700 130 "Squid"
+IMAGE_LOAD_SHEET 34 "../assets/enemies/hard/squidwart.png" 5 5
+ANIM_SET_TOTAL 34 22
+ANIM_SET_FPS 34 2
+ANIM_DRAW 34 650 170 1.40
+
 
 FONT_USE 1
 FONT_COLOR 0 0 255 255

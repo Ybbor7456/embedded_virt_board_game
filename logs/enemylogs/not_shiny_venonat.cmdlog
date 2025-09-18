@@ -22,10 +22,10 @@ TEXT 512 250 "Defense: 4"
 TEXT 512 300 "Prefered Method of Attack: Melee and Magic"
 
 
-IMAGE_LOAD_SHEET 5 "../../assets/enemies/easy/not_venonat.png"  2 3
-ANIM_SET_TOTAL    5 5                     
-ANIM_SET_FPS      5 2
-ANIM_DRAW         5 420 350 7
+IMAGE_LOAD_SHEET 9 "../../assets/enemies/easy/not_venonat.png"  2 3
+ANIM_SET_TOTAL    9 5                     
+ANIM_SET_FPS      9 2
+ANIM_DRAW         9 420 350 7
 
 
 FONT_USE 1

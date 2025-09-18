@@ -22,10 +22,10 @@ TEXT 512 250 "Defense: 3"
 TEXT 512 300 "Prefered Method of Attack: Melee and Ranged"
 
 
-IMAGE_LOAD_SHEET 4 "../../assets/enemies/easy/not_venonat.png"  2 3
-ANIM_SET_TOTAL    4 5                     
-ANIM_SET_FPS      4 2
-ANIM_DRAW         4 420 350 7
+IMAGE_LOAD_SHEET 8 "../../assets/enemies/easy/not_venonat.png"  2 3
+ANIM_SET_TOTAL    8 5                     
+ANIM_SET_FPS      8 2
+ANIM_DRAW         8 420 350 7
 
 
 FONT_USE 1
