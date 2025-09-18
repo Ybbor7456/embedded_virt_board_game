@@ -49,7 +49,7 @@ TARGET medium "logs/gallerymedium.cmdlog"
 TEXT 512 320 "Gallery Medium"
 
 HITBOX hard 712 320 200 40
-TARGET hard "logs/galleryard.cmdlog"
+TARGET hard "logs/galleryhard.cmdlog"
 TEXT 812 320 "Gallery Hard"
 
 

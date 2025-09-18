@@ -15,8 +15,8 @@ TEXT_ALIGN CENTER
 TEXT 512 50 "Hard LvL Mob Gallery"
 
 
-HITBOX devil 50 170 100 100
-TARGET devil "logs/assets/devil.cmdlog"
+HITBOX DEVIL 50 170 100 100
+TARGET DEVIL "logs/enemylogs/devil.cmdlog"
 FONT_COLOR 220 10 10 255
 FONT_SIZE 34
 TEXT 100 130 "Devil"
@@ -27,7 +27,7 @@ ANIM_DRAW 31 50 170 1.5
 
 
 HITBOX souls 250 170 100 100
-TARGET souls "logs/assets/souls.cmdlog"
+TARGET souls "logs/enemylogs/souls.cmdlog"
 FONT_COLOR 220 0 220 255
 FONT_SIZE 34
 TEXT 300 130 "Souls"
@@ -38,7 +38,7 @@ ANIM_DRAW 32 250 170 0.085
 
 
 HITBOX vamp 450 170 100 100
-TARGET vamp "logs/assets/vamp.cmdlog"
+TARGET vamp "logs/enemylogs/vamp.cmdlog"
 FONT_COLOR 255 15 0 255
 FONT_SIZE 34
 TEXT 500 130 "Vamp"
@@ -49,14 +49,14 @@ ANIM_DRAW 33 450 170 1.55
 
 
 HITBOX ward 650 170 100 100
-TARGET ward "logs/assets/ward.cmdlog"
+TARGET ward "logs/enemylogs/squidward.cmdlog"
 FONT_COLOR 9 0 170 255
 FONT_SIZE 34
 TEXT 700 130 "Squid"
 IMAGE_LOAD_SHEET 34 "../assets/enemies/hard/squidwart.png" 5 5
 ANIM_SET_TOTAL 34 22
 ANIM_SET_FPS 34 2
-ANIM_DRAW 34 650 170 1.40
+ANIM_DRAW 34 650 170 1.0
 
 
 FONT_USE 1

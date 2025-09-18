@@ -1,0 +1,34 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 189 238 232 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 10 160 170 255    
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "Squidward"
+
+FONT_SIZE 30
+
+TEXT 512 150 "Blow kisses and shoots ink"
+TEXT 512 200 "Attack: 10"
+TEXT 512 250 "Defense: 7"
+TEXT 512 300 "Prefered Method of Attack: Melee 60, Ranged 40%"
+
+IMAGE_LOAD_SHEET 34 "../assets/enemies/hard/squidwart.png" 5 5
+ANIM_SET_TOTAL 34 22
+ANIM_SET_FPS 34 2
+ANIM_DRAW 34 430 380 1.95
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1

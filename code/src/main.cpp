@@ -551,7 +551,7 @@ static bool LoadCmdLog(const std::string& path, std::vector<Command>& out) {
 
     std::ifstream fin(path);
     if (!fin) {
-        TraceLog(LOG_ERROR, "Could not open cmdlog: %s", path.c_str());
+          TraceLog(LOG_ERROR, "Could not open cmdlog: %s", path.c_str());
         return false;
     }
 
@@ -660,8 +660,8 @@ static inline bool BtnUp()    { return IsKeyPressed(KEY_UP);    }
 static inline bool BtnDown()  { return IsKeyPressed(KEY_DOWN);  }
 static inline bool BtnLeft()  { return IsKeyPressed(KEY_LEFT);  }
 static inline bool BtnRight() { return IsKeyPressed(KEY_RIGHT); }
-static inline bool BtnA()     { return IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE); }
-static inline bool BtnB()     { return IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_ESCAPE); }
+static inline bool BtnA()     { return IsKeyPressed(KEY_ENTER) || IsKeyPressed(KEY_SPACE) || IsKeyPressed(KEY_A); }
+static inline bool BtnB()     { return IsKeyPressed(KEY_BACKSPACE) || IsKeyPressed(KEY_B); }
 
 
 
@@ -714,6 +714,17 @@ static void UpdateMenu(AppState& S) {
     if (S.tileMenu.empty()) return;
     const int cur = S.selected;
 
+   /* int delta = 0;
+    if (IsKeyPressed(KEY_UP)) delta = -1;; 
+    if (IsKeyPressed(KEY_DOWN)) delta = +1;;
+    if (IsKeyPressed(KEY_LEFT)); delta = -1;
+    if (IsKeyPressed(KEY_RIGHT)) delta = +1;;
+
+
+    if (delta != 0) {
+        int n = (int)S.tileMenu.size();
+        S.selected = (S.selected + delta + n) % n;
+    } */
     auto center = [](const Rectangle& r) -> Vector2 {
         return { r.x + r.width * 0.5f, r.y + r.height * 0.5f };
     };
@@ -778,39 +789,28 @@ void DrawMenuOverlay(const AppState& S) {
 
 
 static void ApplyUiMetaFromCmds(AppState& S, const std::vector<Command>& cmds) {
-    auto findItem = [&](const std::string& key) -> MenuItem* {
-        const std::string k = normalize_key(key);
+    auto findId = [&](const std::string& id) -> MenuItem* {
+        for (auto& it : S.tileMenu) if (it.id == id) return &it;
 
-        // 1) by id
-        for (auto& it : S.tileMenu)
-            if (!it.id.empty() && normalize_key(it.id) == k) return &it;
-
-        // 2) fallback by label text 
-        for (auto& it : S.tileMenu)
-            if (normalize_key(it.label) == k) return &it;
+                                                            // 2) fallback by label text 
+       // for (auto& it : S.tileMenu)                       // removed search by label
+        //    if (normalize_key(it.label) == k) return &it;
 
         return nullptr;
     };
 
-
+    S.tileMenu.reserve(S.tileMenu.size() + cmds.size());
     for (const auto& c : cmds) {
-        if (auto hb = std::get_if<CmdHitbox>(&c)) {
-            auto* it = findItem(hb->id);
-            if (!it) {
-                S.tileMenu.push_back({ hb->id, hb->id, hb->r, "" });
-            } else {
-                it->rect = hb->r;
-            }
-        } else if (auto tg = std::get_if<CmdTarget>(&c)) {
-            auto* it = findItem(tg->id);
-            if (!it) {
-                S.tileMenu.push_back({ tg->id, tg->id, {0,0,0,0}, tg->path });
-            } else {
-                it->targetLog = tg->path;
-            }
+        if (const auto* hb = std::get_if<CmdHitbox>(&c)) {
+            if (auto* it = findId(hb->id)) it->rect = hb->r;
+            else S.tileMenu.push_back({ hb->id, hb->id, hb->r, "" });
+        } else if (const auto* tg = std::get_if<CmdTarget>(&c)) {
+            if (auto* it = findId(tg->id)) it->targetLog = tg->path;
+            else S.tileMenu.push_back({ tg->id, tg->id, {0,0,0,0}, tg->path });
         }
     }
-}
+    }
+
 
 static bool LoadScreen(AppState& S, const std::string& path, std::vector<Command>& cmds, bool pushToStack = true) {
     if (!LoadCmdLog(path, cmds)) return false;
@@ -831,6 +831,14 @@ static bool GoBack(AppState& S, std::vector<Command>& cmds, const std::string& t
     return LoadScreen(S, *prev, cmds, false);
 }
 
+static void DumpNav(const AppState& S, const char* label = nullptr) {
+    if (label) TraceLog(LOG_INFO, "%s", label);
+    TraceLog(LOG_INFO, "current: %s", S.currentPath.c_str());
+    TraceLog(LOG_INFO, "stack:%zu", S.navStack.size());
+    for (size_t i = 0; i < S.navStack.size(); ++i) {
+        TraceLog(LOG_INFO, "  %zu: %s", i, S.navStack[i].c_str());
+    }
+}
 /*
 █▀▄▀█ ▄▀█ █ █▄░█
 █░▀░█ █▀█ █ █░▀█
@@ -873,7 +881,7 @@ int main(int argc, char** argv) {
     if (!LoadScreen(S, filePath, cmds)) { CloseWindow(); return 1; } 
 
     const std::string baseDir = dirname_of(filePath); // for resolving relative asset paths
-
+   // DumpNav(S, " ********* startup");
     
     size_t idx = 0;                  // index into cmds 
    // unsigned lastFrame = 0;         
@@ -897,13 +905,25 @@ int main(int argc, char** argv) {
 
 
                 if (!S.tileMenu.empty() && BtnA()) {
-        const std::string& next = S.tileMenu[S.selected].targetLog;
-        if (!LoadScreen(S, next, cmds)) { CloseWindow(); return 1; }
-        
-        }
+                        const std::string next = S.tileMenu[S.selected].targetLog;
+                      /* TraceLog(LOG_INFO, "A: selected=%d id=%s next=%s",
+                        S.selected,
+                        S.tileMenu[S.selected].id.c_str(),
+                        next.c_str()); */
+                     //   DumpNav(S, "before A");
+                    if (!LoadScreen(S, next, cmds)) { CloseWindow(); return 1; }
+                   // DumpNav(S, "after A");
 
-                if (BtnB()) {
-                    if (!GoBack(S, cmds)) { CloseWindow(); return 1; }
+                if (!LoadScreen(S, next, cmds)) { CloseWindow(); return 1; }
+            
+        }
+             /*   if (BtnA()){
+                    DumpNav(S, "***************** A pressed"); 
+                } */
+                if (BtnB()) {   // backspace to previous window
+                    if (!GoBack(S, cmds)) { CloseWindow();
+                    return 1; }
+                //    DumpNav(S, "*********** B:after");
     }
                
 
@@ -967,10 +987,10 @@ int main(int argc, char** argv) {
                     } else {
                         Font f = LoadFontEx(full.c_str(), c.sizePx, nullptr, 0);
                         if (f.baseSize == 0) {
-                            TraceLog(LOG_ERROR, "LoadFontEx failed: %s", full.c_str());
+                           // TraceLog(LOG_ERROR, "LoadFontEx failed: %s", full.c_str());
                             g_fonts[c.id].font = GetFontDefault();
                         } else {
-                            TraceLog(LOG_INFO, "Loaded font[%d]: %s (size=%d)", c.id, full.c_str(), c.sizePx);
+                            //TraceLog(LOG_INFO, "Loaded font[%d]: %s (size=%d)", c.id, full.c_str(), c.sizePx);
                             g_fonts[c.id].font = f;
                         }
                         g_fonts[c.id].loaded = true;

@@ -1,0 +1,34 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 0 0 0 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 255 15 0 255    
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "Vampire"
+
+FONT_SIZE 30
+
+TEXT 512 150 "Head Vampire"
+TEXT 512 200 "Attack: 9"
+TEXT 512 250 "Defense: 6"
+TEXT 512 300 "Prefered Method of Attack: Melee 10, Ranged 20%, Magic 70%"
+
+IMAGE_LOAD_SHEET 33 "../assets/enemies/hard/vamp.png" 5 5
+ANIM_SET_TOTAL 33 25
+ANIM_SET_FPS 33 2
+ANIM_DRAW 33 420 380 2.75
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1

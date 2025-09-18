@@ -16,7 +16,7 @@ TEXT 512 50 "Medium LvL Mob Gallery"
 
 
 HITBOX TMAN 50 170 100 100
-TARGET TMAN "logs/assets/tenta_man.cmdlog"
+TARGET TMAN "logs/enemylogs/tenta_man.cmdlog"
 FONT_COLOR 240 40 10 255
 FONT_SIZE 34
 TEXT 100 130 "Kimbro Man"
@@ -27,7 +27,7 @@ ANIM_DRAW         21 50 170 0.23
  
 
 HITBOX clown 250 170 100 100
-TARGET clown "logs/assets/clown.cmdlog"
+TARGET clown "logs/enemylogs/clown.cmdlog"
 FONT_COLOR 0 0 0 255
 FONT_SIZE 34
 TEXT 300 130 "Clown"
@@ -40,7 +40,7 @@ ANIM_DRAW 22 250 170 1.5
  
 
 HITBOX di 450 170 100 100
-TARGET di "logs/assets/di.cmdlog"
+TARGET di "logs/enemylogs/di.cmdlog"
 FONT_COLOR 255 255 255 255
 FONT_SIZE 34
 TEXT 495 130 "D"
@@ -54,7 +54,7 @@ ANIM_DRAW 23 450 170 0.24
 
 
 HITBOX king_nat 650 170 100 100
-TARGET king_nat "logs/assets/king_nat.cmdlog"
+TARGET king_nat "logs/enemylogs/king_nat.cmdlog"
 FONT_COLOR 28 100 0 255         
 FONT_SIZE 34
 TEXT 705 130 "king nat"
@@ -66,7 +66,7 @@ ANIM_DRAW         24 650 170 3.17
 
 
 HITBOX genie 850 170 100 100
-TARGET genie "logs/assets/tenta_man.cmdlog"
+TARGET genie "logs/enemylogs/genie.cmdlog"
 FONT_COLOR 25 217 35 255         
 FONT_SIZE 34
 TEXT 900 130 "genie"
@@ -75,7 +75,15 @@ ANIM_SET_TOTAL    25 21
 ANIM_SET_FPS      25 2
 ANIM_DRAW         25 850 170 .70
 
-
+HITBOX boots 50 370 100 100
+TARGET boots "logs/enemylogs/bootsmobile.cmdlog"
+FONT_COLOR 0 247 15 255         
+FONT_SIZE 34
+TEXT 100 330 "Boots Mobile"
+IMAGE_LOAD_SHEET 26 "../assets/enemies/medium/bootsmobile.png"  3 4
+ANIM_SET_TOTAL    26 10                      
+ANIM_SET_FPS      26 1
+ANIM_DRAW         26 50 370 1.00
 
 
 

@@ -1,0 +1,34 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+CLS
+BG 0 0 0 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 220 0 220 255     
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "Lost Souls"
+
+FONT_SIZE 30
+
+TEXT 512 150 "Wandering Spirits"
+TEXT 512 200 "Attack: 12"
+TEXT 512 250 "Defense: 4"
+TEXT 512 300 "Prefered Method of Attack: Melee 10%, Magic 90%"
+
+IMAGE_LOAD_SHEET 32 "../assets/enemies/hard/souls.png" 2 3
+ANIM_SET_TOTAL 32 6
+ANIM_SET_FPS 32 1
+ANIM_DRAW 32 370 340 0.175
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1

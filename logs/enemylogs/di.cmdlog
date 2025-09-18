@@ -1,0 +1,35 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+
+CLS
+BG 0 0 0 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 255 255 255 255      
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "Di"
+
+FONT_SIZE 30
+
+TEXT 512 150 "RNG garbage"
+TEXT 512 200 "Attack: (1-6) * (1-3)"
+TEXT 512 250 "Defense: (1-6) * (1-2)"
+TEXT 512 300 "Prefered Method of Attack: 100% random"
+
+
+IMAGE_LOAD_SHEET 23 "../assets/enemies/medium/regular_di.png" 3 4
+ANIM_SET_TOTAL 23 11
+ANIM_SET_FPS 23 2
+ANIM_DRAW 23 430 390 0.45
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1

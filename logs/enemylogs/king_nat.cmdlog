@@ -1,0 +1,35 @@
+HELLO V1 GAME "Mob Gallery" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+
+
+CLS
+BG 0 0 0 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE  1
+
+FONT_COLOR 25 217 35 255       
+FONT_SIZE 72
+TEXT_ALIGN CENTER
+
+TEXT 512 50 "King Nat"
+
+FONT_SIZE 30
+
+TEXT 512 150 "King of the nats"
+TEXT 512 200 "Attack: 7"
+TEXT 512 250 "Defense: 5"
+TEXT 512 300 "Prefered Method of Attack: Ranged 70%, Magic 30%"
+
+
+IMAGE_LOAD_SHEET 24 "../assets/enemies/medium/kingnat.png"  2 3
+ANIM_SET_TOTAL    24 5                      
+ANIM_SET_FPS      24 2
+ANIM_DRAW         24 450 370 4.47
+
+
+FONT_USE 1
+FONT_COLOR 0 0 255 255
+FONT_SIZE 30
+TEXT 890 545 "Press B to return"
+FLIP 1
