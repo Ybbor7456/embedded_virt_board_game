@@ -1,62 +1,45 @@
-# --- Build directories ---
-/build*/
-/cmake-build-*/
+# --- CMake & build outputs ---
+build/
+**/build/
+CMakeCache.txt
 CMakeFiles/
-/CMakeCache.txt
-/cmake_install.cmake
-/Makefile
-/compile_commands.json
+cmake_install.cmake
+Makefile
+install_manifest.txt
+_testing/
+Testing/
+_compile/
+compile_commands.json
 
-# Visual Studio / MSVC extras
-/.vs/
-*.vcxproj.user
-*.ilk
-*.ipch
+# Ninja
+.ninja_deps
+.ninja_log
 
-# --- Compiled binaries / objects ---
-*.exe
-*.dll
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# Compiled objects / libs / binaries
 *.o
 *.obj
-*.so
+*.lo
+*.la
 *.a
 *.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
 *.pdb
+*.dSYM/
 
-# --- Logs and temporary files ---
-*.log
-*.tmp
-*.bak
-
-# --- IDE / editor specific ---
-/.vscode/
-/.idea/
-*.swp
-*.swo
-*.user
-*.VC.db
-*.VC.opendb
-
-# --- OS generated files ---
+# OS junk
 .DS_Store
 Thumbs.db
-desktop.ini
-~$*
 
-# --- Videos (we link externally) ---
-*.mp4
-*.mov
-*.mkv
-
-# --- Firmware / images ---
-*.uf2
-*.bin
-*.elf
-*.hex
-*.map
-
-
-logs/CMakeFiles/
-
-
-raylib/
+# Raylib caches (if any)
+*.rlibcache
