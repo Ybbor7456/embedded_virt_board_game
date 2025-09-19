@@ -21,14 +21,14 @@ FONT_SIZE 30
 
 TEXT 512 130 "My boots mobile and I'm on boost mobile"
  
-TEXT 512 200 "Attack: 100"
+TEXT 512 200 "Attack: 9001"
 TEXT 512 250 "Defense: 0.00001"
 TEXT 512 300 "Prefered Method of Attack: Ranged 99%"
 
 IMAGE_LOAD_SHEET 26 "../assets/enemies/medium/bootsmobile.png"  3 4
 ANIM_SET_TOTAL    26 10                      
 ANIM_SET_FPS      26 1
-ANIM_DRAW         26 420 340 2.2
+ANIM_DRAW         26 420 330 2.3
 
 
 FONT_USE 1

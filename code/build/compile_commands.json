@@ -1,0 +1,14 @@
+[
+{
+  "directory": "/home/ybbor/emb_game/code/build",
+  "command": "/usr/bin/c++ -I/home/ybbor/emb_game/code/src -I/home/ybbor/emb_game/code/third_party -g -std=gnu++17 -o CMakeFiles/cmdviewer.dir/src/main.cpp.o -c /home/ybbor/emb_game/code/src/main.cpp",
+  "file": "/home/ybbor/emb_game/code/src/main.cpp",
+  "output": "/home/ybbor/emb_game/code/build/CMakeFiles/cmdviewer.dir/src/main.cpp.o"
+},
+{
+  "directory": "/home/ybbor/emb_game/code/build",
+  "command": "/usr/bin/c++ -I/home/ybbor/emb_game/code/src -I/home/ybbor/emb_game/code/third_party -g -std=gnu++17 -o CMakeFiles/cmdviewer.dir/src/audio/audio.cpp.o -c /home/ybbor/emb_game/code/src/audio/audio.cpp",
+  "file": "/home/ybbor/emb_game/code/src/audio/audio.cpp",
+  "output": "/home/ybbor/emb_game/code/build/CMakeFiles/cmdviewer.dir/src/audio/audio.cpp.o"
+}
+]
