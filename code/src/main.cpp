@@ -1,3 +1,4 @@
+#include "audio/audio.h"
 #include <raylib.h>      // core game library
 #include <algorithm>     // std::min/std::max, transforms
 #include <cctype>        // toupper/tolower helpers
@@ -73,7 +74,6 @@ struct DrawAnim {
     float scale; }; //draw lists of sprites and text
 
 
-
 struct Scene {
     std::vector<CmdText>  texts;  // text
     std::vector<DrawAnim> anims;  // sprites
@@ -83,7 +83,6 @@ struct Scene {
 struct CmdAnimSetTotal { 
     int id; 
     int total; }; // frame cap
-
 
 // font and color
 struct CmdFontSize { int size; };
@@ -133,6 +132,30 @@ struct CmdTarget {
      std::string path; }; 
 
 
+
+struct CmdMusic{
+    std::string path;
+    bool loop = true;
+    float volume = 1.f;  
+    };
+
+
+struct CmdStopMusic{
+    int fadeMusic = 0; 
+};
+
+struct CmdSfx{
+    std::string path; 
+    float volume = 1.f;
+};
+
+struct CmdMusicVolume{
+std::string path; 
+float volume = 1.f;
+int fadeMusic = 0;
+};
+
+
 //default values/declarations/definitions
 static std::unordered_map<int, AnimSheet> g_anims; // id → animation
 static int g_font_size = 20; 
@@ -150,7 +173,8 @@ using Command = std::variant<
     CmdImgLoadSheet, CmdAnimSetFps, CmdAnimDraw,
     CmdAnimSetTotal, CmdBg, CmdFontSize, CmdFontLoad, 
     CmdFontUse, CmdFontColor, CmdTextAlign, CmdTextSpacing,
-    CmdHitbox, CmdTarget
+    CmdHitbox, CmdTarget, CmdMusic, CmdStopMusic, CmdSfx,
+    CmdMusicVolume
 >;
 
 /*
@@ -529,8 +553,35 @@ static std::optional<Command> parseLine(const std::string& raw) {
         return Command{ CmdTarget{ id, p } };
     }
 }
+
+    if (line.rfind("SOUND" && !args.empty())){
+        CmdMusic c; 
+        c.path = args[0];
+        c.loop;
+        c.volume;
+    }
+
+    if (line.rfind("STOPSOUND" && !args.empty())){
+        CmdStopMusic c; 
+        c.fadeMusic;
+    }
+
+    if (line.rfind("SFX" && !args.empty())){
+        CmdSfx c; 
+        c.path = args[0];
+        c.volume;
+    }
+
+    if (line.rfind("MUSICVOLUME" && !args.empty())){
+        CmdMusicVolume c; 
+        c.path;
+        c.fadeMusic;
+        c.volume;
+    }
+
     return std::nullopt;
 }
+
 
 
 
@@ -787,7 +838,6 @@ void DrawMenuOverlay(const AppState& S) {
 }
 
 
-
 static void ApplyUiMetaFromCmds(AppState& S, const std::vector<Command>& cmds) {
     auto findId = [&](const std::string& id) -> MenuItem* {
         for (auto& it : S.tileMenu) if (it.id == id) return &it;
@@ -855,7 +905,7 @@ int main(int argc, char** argv) {
 
     // Create window and 2D camera (zoom == integer scale)
     InitWindow(logicalW * windowScale, logicalH * windowScale, "Command Viewer (raylib)"); // window name + dims
-
+    Audio_Init();
     SetTraceLogLevel(LOG_INFO);  // loud checks in console (linux not alligning cmdlog text)
     
     SetTargetFPS(60);
@@ -1071,7 +1121,7 @@ g_anims.clear();
 for (auto &kv : g_fonts)
     if (kv.second.loaded) UnloadFont(kv.second.font);
 g_fonts.clear();
-
+Audio_Shutdown();
 CloseWindow();
 return 0;}
 
