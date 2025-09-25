@@ -1,0 +1,34 @@
+HELLO V1 GAME "Guardians" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+// test to see if hovering boxes will display on photos
+CLS
+BG 249 207 177 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Regular.ttf" 64
+FONT_LOAD 2 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+
+FONT_USE  2
+
+// !!!! make it to where a photo can be the entire background, not loaded as spritesheet. 
+//set map in top corner for now
+IMAGE_LOAD_SHEET 99 "../assets/maps/nodes.png" 1 1
+ANIM_SET_TOTAL    99 1                      
+ANIM_SET_FPS     99 1
+ANIM_DRAW         99 0 0 4
+
+
+
+
+
+// checks different nodes on maps
+HITBOX node1  52 360 20 20
+TARGET node1  "logs/description.cmdlog"
+
+HITBOX node2  109 332 20 20
+TARGET node2  "logs/rules.cmdlog"
+
+HITBOX node3  172 312 20 20
+TARGET node3  "logs/title.cmdlog"
+
+// boxes do display on map
+// store monster battles in eah node
