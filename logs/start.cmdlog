@@ -32,3 +32,4 @@ TARGET node3  "logs/title.cmdlog"
 
 // boxes do display on map
 // store monster battles in eah node
+FLIP 1

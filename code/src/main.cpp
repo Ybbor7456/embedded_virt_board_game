@@ -123,6 +123,7 @@ struct AppState{
     Color idleOutline    = CLITERAL(Color){255, 255, 255, 48};
     std::string currentPath;
     std::vector<std::string> navStack;
+    std::string baseDir; 
  };
 struct CmdHitbox { 
     std::string id;
@@ -150,11 +151,27 @@ struct CmdSfx{
 };
 
 struct CmdMusicVolume{
-std::string path; 
-float volume = 1.f;
-int fadeMusic = 0;
+    std::string path; 
+    float volume = 1.f;
+    int fadeMusic = 0;
+    };
+
+struct CmdImageFull {
+    std::string path;
+    enum Mode {
+    Stretch,        // 
+    Fit,            //
+    Cover           // 
+    } mode = Fit;
+
 };
 
+struct Rect{
+    float x = 0; 
+    float y = 0;
+    float w = 0;
+    float h = 0; 
+};
 
 //default values/declarations/definitions
 static std::unordered_map<int, AnimSheet> g_anims; // id → animation
@@ -165,6 +182,7 @@ static Align g_textAlign   = Align::Left;
 static float g_textSpacing = 1.0f;
 static UIMode gMode = UIMode::Normal;
 static std::string gLastError;
+static std::unordered_map<std::string, Texture2D> g_texCache;
 
 
 // Variant that can hold any command 
@@ -174,7 +192,7 @@ using Command = std::variant<
     CmdAnimSetTotal, CmdBg, CmdFontSize, CmdFontLoad, 
     CmdFontUse, CmdFontColor, CmdTextAlign, CmdTextSpacing,
     CmdHitbox, CmdTarget, CmdMusic, CmdStopMusic, CmdSfx,
-    CmdMusicVolume
+    CmdMusicVolume, CmdImageFull
 >;
 
 /*
@@ -238,11 +256,32 @@ static inline bool is_absolute_path(const std::string& p) {
 
 static inline bool ensure_file(const std::string& full, const char* what) {
     if (!FileExists(full.c_str())) {               // raylib helper
-        TraceLog(LOG_ERROR, "%s missing: %s", what, full.c_str());
+        //TraceLog(LOG_ERROR, "%s missing: %s", what, full.c_str());
         return false;
     }
     return true;
 }
+
+
+static Rect makeFull(int sx, int sy, int tw, int th, CmdImageFull::Mode mode) {
+    if (mode == CmdImageFull::Stretch) return {0,0,(float)sx,(float)sy}; // returns at (0,0), screen width and height
+
+    // aspect ratios
+    const float sAspect = (float)sx / (float)sy;
+    const float tAspect = (float)tw / (float)th;
+
+    if (mode == CmdImageFull::Fit) {
+        float scale = (tAspect > sAspect) ? (float)sx / (float)tw : (float)sy / (float)th; // tA > sA -> sx/tw, else -> sy/th
+        float w = tw * scale, h = th * scale;
+        return { (sx - w) * 0.5f, (sy - h) * 0.5f, w, h };
+    }
+    else { // Cover
+        float scale = (tAspect < sAspect) ? (float)sx / (float)tw : (float)sy / (float)th;
+        float w = tw * scale, h = th * scale;
+        return { (sx - w) * 0.5f, (sy - h) * 0.5f, w, h };
+    }
+}
+
 
 /* 
 █▀▀ █▄░█ █▀▄   █░█ ▀█▀ █ █░░ █ ▀█▀ █ █▀▀ █▀
@@ -381,6 +420,29 @@ static std::optional<CmdBg> parseBg(const std::string& line) {
     return CmdBg{r,g,b,a};
 }
 
+static Texture2D* getOrLoadTexture(const AppState& S, const std::string& relOrAbs) {
+    // resolve relative to current cmdlog
+    std::string full = relOrAbs;
+    if (!is_absolute_path(full)) full = join_path(S.baseDir, relOrAbs); // join for abs path
+
+    auto it = g_texCache.find(full);                    
+    if (it != g_texCache.end()) return &it->second;     // if not true, point to Texture2D object
+
+    if (!ensure_file(full, "TEXTURE")) return nullptr; 
+    Texture2D tex = LoadTexture(full.c_str());
+    if (tex.id == 0) return nullptr; 
+    SetTextureFilter(tex, TEXTURE_FILTER_POINT);
+    return &g_texCache.emplace(full, tex).first->second;
+}
+
+static void drawImageFull(const CmdImageFull& c, const AppState& S, int logicalW, int logicalH) {
+    Texture2D* tex = getOrLoadTexture(S, c.path);
+    if (!tex) return;
+    Rect dst = makeFull(logicalW, logicalH, tex->width, tex->height, c.mode);
+    Rectangle src = {0,0,(float)tex->width,(float)tex->height};
+    Rectangle dd  = {dst.x, dst.y, dst.w, dst.h};
+    DrawTexturePro(*tex, src, dd, {0,0}, 0.0f, WHITE);
+}
 
 /*
 █▀█ ▄▀█ █▀█ █▀ █▀▀
@@ -579,9 +641,23 @@ static std::optional<Command> parseLine(const std::string& raw) {
         c.volume;
     }
 
-    return std::nullopt;
-}
+    else if (op == "IMAGE_FULL" && args.size() >= 1) {
+    CmdImageFull c;
+    c.path = args[0]; // already de-quoted by your lexer
 
+    if (args.size() >= 2) {             //IMAGE_FULL .../path/.. STRETCH/COVER/FIT
+        std::string m = args[1];
+        std::transform(m.begin(), m.end(), m.begin(), ::toupper);
+        if (m == "STRETCH") c.mode = CmdImageFull::Stretch;
+        else if (m == "COVER") c.mode = CmdImageFull::Cover;
+        else c.mode = CmdImageFull::Fit;
+    }
+    return c;}
+
+
+    return std::nullopt;
+
+}
 
 
 
@@ -1076,9 +1152,13 @@ int main(int argc, char** argv) {
 
         BeginMode2D(cam);
 
+        for (const auto& c : frameCmds) {
+            if (auto p = std::get_if<CmdImageFull>(&c)) {
+                drawImageFull(*p, S, logicalW, logicalH);
+            }}
         // draw text command
     for (const auto& t : scene.texts) {
-        // pick the frozen font (falls back to current/default safely)
+        // pick the frozen font
     // int idx = (t.fontIndex >= 0) ? t.fontIndex : g_currentFont;
         Font use =
             (idx >= 0 && idx < (int)g_fonts.size() && g_fonts[idx].loaded)
@@ -1111,7 +1191,7 @@ int main(int argc, char** argv) {
         EndDrawing();
 }
 
-
+// clears maps
 g_anims.clear();
 
 for (auto &kv : g_anims)
@@ -1121,6 +1201,13 @@ g_anims.clear();
 for (auto &kv : g_fonts)
     if (kv.second.loaded) UnloadFont(kv.second.font);
 g_fonts.clear();
+
+for (auto& kv : g_texCache) {
+    if (kv.second.id != 0) UnloadTexture(kv.second);
+}
+g_texCache.clear();
+
+
 Audio_Shutdown();
 CloseWindow();
 return 0;}

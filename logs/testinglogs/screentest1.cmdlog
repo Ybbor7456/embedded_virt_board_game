@@ -1,0 +1,20 @@
+HELLO V1 GAME "Guardians" PROTO 1
+VIEW LOGICAL_W 1024 LOGICAL_H 576 TILE_W 32 TILE_H 32
+CLS
+BG 255 255 255 255
+
+FONT_LOAD 1 "../assets/AtkinsonHyperlegible-Bold.ttf"    64
+FONT_USE 1
+
+FONT_SIZE 60
+TEXT_ALIGN CENTER
+FONT_COLOR 0 0 0 255
+TEXT 300 300 "hello" 
+
+IMAGE_FULL  "../../assets/maps/nodes.png"  FIT                  # Fix path
+IMAGE_LOAD_SHEET 99 "../../assets/maps/nodes.png" 1 1
+ANIM_SET_TOTAL    99 1                      
+ANIM_SET_FPS     99 1
+ANIM_DRAW         99 0 0 4
+
+FLIP 1

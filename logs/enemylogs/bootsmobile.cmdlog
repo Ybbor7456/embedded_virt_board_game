@@ -25,6 +25,8 @@ TEXT 512 200 "Attack: 9001"
 TEXT 512 250 "Defense: 0.00001"
 TEXT 512 300 "Prefered Method of Attack: Ranged 99%"
 
+#IMAGE_FULL "../assets/enemies/medium/bootsmobile.png" FIT
+
 IMAGE_LOAD_SHEET 26 "../assets/enemies/medium/bootsmobile.png"  3 4
 ANIM_SET_TOTAL    26 10                      
 ANIM_SET_FPS      26 1
