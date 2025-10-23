@@ -5,7 +5,7 @@ This repo renders a 2-player, turn-based ‘virtual board’ on the PC. An MCU (
 The PC Viewer is used for the debugging process as it would be more difficult to debug the drawing instructions from the .cmdlog files if the final product has not yet been created. Intended for re-use in future proejects. 
 
 ## Features
-- Minimal **text command language** (`BG`, `TEXT`, `FONT_*`, `IMAGE_LOAD_SHEET`, `ANIM_*`, `FLIP`)  
+- Minimal **text command language** (`BG`, `TEXT`, `FONT_*`, `IMAGE_LOAD_SHEET`, `ANIM_*`, `FLIP`, 'CLS')  
 - Font size/color/selection + text alignment and spacing  
 - Spritesheet loading with per-animation FPS and cached textures  
 - Per-frame background color and a simple scene queue
